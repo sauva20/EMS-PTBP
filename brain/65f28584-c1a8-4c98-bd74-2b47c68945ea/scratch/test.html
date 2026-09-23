@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html>
+<body>
+    <table>
+        <tr>
+            <td class="px-4 py-3">Emission Source</td>
+            <td class="px-2 py-3 text-center">B1</td>
+            <td class="px-2 py-3 text-center">B10</td>
+            <td class="px-2 py-3 text-center">B11</td>
+            <td class="px-2 py-3 text-center">Total</td>
+        </tr>
+        <tr>
+            <td class="px-4 py-2">Purchased Electricity (kWh)</td>
+            <td class="px-1 py-1">
+                <input type="text" class="matrix-input" value="2,079,594" data-source="Purchased Electricity" data-source-id="3" data-building-name="B1">
+            </td>
+            <td class="px-1 py-1">
+                <input type="text" class="matrix-input" value="408,234" data-source="Purchased Electricity" data-source-id="3" data-building-name="B10">
+            </td>
+            <td class="px-1 py-1">
+                <input type="text" class="matrix-input" value="1,312,025" data-source="Purchased Electricity" data-source-id="3" data-building-name="B11">
+            </td>
+            <td class="px-2 py-1" id="total_val_3">0</td>
+        </tr>
+        <tr>
+            <td class="px-4 py-1">CO2 Emission</td>
+            <td class="px-1 py-1 co2-preview" data-source-id="3">
+                <span class="co2-preview text-green-600 font-semibold">2,512.50</span>
+            </td>
+            <td class="px-1 py-1 co2-preview" data-source-id="3">
+                <span class="co2-preview text-green-600 font-semibold">493.22</span>
+            </td>
+            <td class="px-1 py-1 co2-preview" data-source-id="3">
+                <span class="co2-preview text-green-600 font-semibold">1,585.15</span>
+            </td>
+            <td class="px-2 py-1 text-right" id="total_co2_3">0</td>
+        </tr>
+    </table>
+
+    <script>
+        const inputs = document.querySelectorAll('.matrix-input');
+        function updateTotals() {
+            const sourceIds = [...new Set(Array.from(inputs).map(i => i.dataset.sourceId))];
+            
+            sourceIds.forEach(sourceId => {
+                let totalVal = 0;
+                let totalCo2 = 0;
+                const isElec = document.querySelector(`.matrix-input[data-source-id="${sourceId}"]`).dataset.source === 'Purchased Electricity';
+                
+                const rowInputs = document.querySelectorAll(`.matrix-input[data-source-id="${sourceId}"]`);
+                rowInputs.forEach(input => {
+                    const val = parseFloat(input.value.replace(/,/g, '')) || 0;
+                    totalVal += val;
+                    
+                    let factor = parseFloat(input.dataset.factor) || 0;
+                    const sourceName = input.dataset.source;
+                    const buildingName = input.dataset.buildingName;
+
+                    const co2 = val * factor;
+                    
+                    const previewCell = input.closest('tr').nextElementSibling.querySelector(`.co2-preview:nth-child(${input.parentElement.cellIndex + 1})`);
+                    
+                    if (!isElec) {
+                        totalCo2 += co2;
+                        if (val > 0) {
+                            previewCell.textContent = co2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                        } else {
+                            previewCell.textContent = '';
+                        }
+                    }
+                });
+                
+                document.getElementById(`total_val_${sourceId}`).textContent = totalVal > 0 ? totalVal.toLocaleString('en-US') : '';
+                if (!isElec) {
+                    document.getElementById(`total_co2_${sourceId}`).textContent = totalCo2 > 0 ? totalCo2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '';
+                } else {
+                    document.getElementById(`total_co2_${sourceId}`).textContent = 'Auto';
+                }
+            });
+        }
+        updateTotals();
+        console.log("Total val 3: " + document.getElementById('total_val_3').textContent);
+    </script>
+</body>
+</html>
