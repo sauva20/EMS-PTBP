@@ -6,7 +6,7 @@ use Illuminate\Database\Eloquent\Model;
 
 class Building extends Model
 {
-    protected $fillable = ['name', 'zone', 'is_active'];
+    protected $fillable = ['name', 'campus', 'zone', 'is_active'];
 
     public function monthlyEmissions()
     {

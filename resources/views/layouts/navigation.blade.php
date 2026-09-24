@@ -34,6 +34,17 @@
                 <i class="{{ request()->routeIs('reports.*') ? 'ph-fill' : 'ph-duotone' }} ph-table text-xl flex-shrink-0"></i>
                 <span class="opacity-0 w-0 ml-0 text-sm whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden" :class="sidebarOpen ? 'opacity-100 w-32 ml-3' : 'opacity-0 w-0 ml-0'">{{ __('Accumulative Data') }}</span>
             </a>
+            <!-- Master Campuses -->
+            <a href="{{ route('master.campuses.index') }}" 
+               class="justify-center flex items-center p-3 overflow-hidden rounded-xl font-semibold transition-all {{ request()->routeIs('master.campuses.*') ? 'bg-[#009B77] text-white shadow-[0_4px_12px_rgba(0,155,119,0.25)] hover:bg-[#008264]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}" :class="sidebarOpen ? 'justify-start' : 'justify-center'" title="Master Campuses">
+                <i class="{{ request()->routeIs('master.campuses.*') ? 'ph-fill' : 'ph-duotone' }} ph-map-pin text-xl flex-shrink-0"></i>
+                <span class="opacity-0 w-0 ml-0 text-sm whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden" :class="sidebarOpen ? 'opacity-100 w-32 ml-3' : 'opacity-0 w-0 ml-0'">{{ __('Master Campuses') }}</span>
+            </a>
+            <a href="{{ route('master.buildings.index') }}" 
+               class="justify-center flex items-center p-3 overflow-hidden rounded-xl font-semibold transition-all {{ request()->routeIs('master.buildings.*') ? 'bg-[#009B77] text-white shadow-[0_4px_12px_rgba(0,155,119,0.25)] hover:bg-[#008264]' : 'text-slate-500 hover:bg-slate-50 hover:text-slate-800' }}" :class="sidebarOpen ? 'justify-start' : 'justify-center'" title="Master Buildings">
+                <i class="{{ request()->routeIs('master.buildings.*') ? 'ph-fill' : 'ph-duotone' }} ph-buildings text-xl flex-shrink-0"></i>
+                <span class="opacity-0 w-0 ml-0 text-sm whitespace-nowrap transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] overflow-hidden" :class="sidebarOpen ? 'opacity-100 w-32 ml-3' : 'opacity-0 w-0 ml-0'">{{ __('Master Buildings') }}</span>
+            </a>
         </div>
         
         <!-- Bottom Actions (Logout) -->

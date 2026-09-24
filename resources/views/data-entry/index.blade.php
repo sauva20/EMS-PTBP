@@ -118,6 +118,75 @@
             </div>
         </div>
 
+        <!-- Global Electricity Emission Factors -->
+        <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-200 transition-all hover:shadow-md mb-6">
+            <div class="p-5 bg-blue-500/10 border-b border-blue-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 rounded-t-2xl">
+                <div>
+                    <h3 class="text-lg font-bold text-blue-700 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
+                        CO2 Emission Global (Electricity)
+                    </h3>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div>
+                        <x-input-label for="inp_coal_factor" :value="__('Coal')" class="text-gray-600 font-medium" />
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <x-text-input id="inp_coal_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $coalFactor }}" />
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <x-input-label for="inp_renewable_factor" :value="__('Renewable')" class="text-gray-600 font-medium" />
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <x-text-input id="inp_renewable_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $renewableFactor }}" />
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
+                            </div>
+                        </div>
+                        <p class="text-xs text-gray-500 mt-1">Source: REC for TNB GET</p>
+                    </div>
+                    <div>
+                        <x-input-label for="inp_pv_factor" :value="__('Self-generated PV')" class="text-gray-600 font-medium" />
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <x-text-input id="inp_pv_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $pvFactor }}" />
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Global Diesel Emission Factors -->
+        <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-200 transition-all hover:shadow-md mb-6">
+            <div class="p-5 bg-orange-500/10 border-b border-orange-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 rounded-t-2xl">
+                <div>
+                    <h3 class="text-lg font-bold text-orange-700 flex items-center gap-2">
+                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                        CO2 Thermal energy self-generated oil
+                    </h3>
+                </div>
+            </div>
+            <div class="p-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <x-input-label for="inp_boiler_factor" :value="__('kgCO2e/liter')" class="text-gray-600 font-medium" />
+                        <div class="mt-1 relative rounded-md shadow-sm">
+                            <x-text-input id="inp_boiler_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-orange-500 focus:ring-orange-500" type="number" step="any" inputmode="decimal" value="{{ number_format($boilerFactor * 1000, 2, '.', '') }}" />
+                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                                <span class="text-gray-500 sm:text-sm">kgCO2e</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
         <!-- Matrix Data Entry Form -->
         <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-200 transition-all hover:shadow-md">
             <form action="{{ route('data-entry.store') }}" method="POST" id="matrixForm">
@@ -166,8 +235,18 @@
                             @foreach($co2Sources as $source)
                                 <tr class="hover:bg-[#009B77]/5 transition-colors group border-b border-gray-200">
                                     <td class="sticky left-0 z-10 bg-white group-hover:bg-[#009B77]/5 px-4 py-3 border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] align-middle">
-                                        <div class="font-medium text-gray-900">{{ $source->name }}</div>
-                                        <div class="text-[11px] text-gray-500 mt-0.5">Unit: {{ $source->unit }}</div>
+                                        @php
+                                            $excelLabels = [
+                                                'Stationary Energy (Diesel)' => 'Stationary energy (1) Diesel (L)',
+                                                'Stationary Energy (LPG)' => 'Stationary energy (2) LPG (kg)',
+                                                'Purchased Electricity' => 'Purchased electricity (kWh)',
+                                                'Self-generated PV Electricity' => 'Solar generated electricity (kWh)',
+                                                'Transportation Petrol' => 'Transportation Petrol (L)',
+                                                'IPPU/Refrigerant' => 'IPPU/Refrigerant (kg)'
+                                            ];
+                                            $displayName = $excelLabels[$source->name] ?? $source->name;
+                                        @endphp
+                                        <div class="font-medium text-gray-900">{{ $displayName }}</div>
                                     </td>
                                     @foreach($buildings as $building)
                                         <td class="px-2 py-2 border-r border-gray-100 align-top">
@@ -233,8 +312,7 @@
                             @php $source = $waterSource; @endphp
                             <tr class="hover:bg-[#009B77]/5 transition-colors group bg-white">
                                 <td class="sticky left-0 z-10 bg-white group-hover:bg-[#009B77]/5 px-4 py-3 border-r border-gray-200 shadow-[1px_0_0_0_#e5e7eb] align-middle">
-                                    <div class="font-medium text-gray-900">{{ $source->name }}</div>
-                                    <div class="text-[11px] text-gray-500 mt-0.5">Unit: {{ $source->unit }}</div>
+                                    <div class="font-medium text-gray-900">{{ $source->name === 'Water Consumption' ? 'Water Consumption (Liter)' : $source->name }}</div>
                                 </td>
                                 @foreach($buildings as $building)
                                     <td class="px-2 py-2 border-r border-gray-100 align-top relative group">
@@ -263,6 +341,346 @@
                         </tbody>
                     </table>
                 </div>
+
+
+    
+    <!-- ELECTRICITY BREAKDOWN TABLES -->
+    @php
+        // Manually group them to perfectly match the Excel 
+        $campus1Buildings = $buildings->filter(fn($b) => in_array($b->name, ['B3', 'B5', 'B8', 'B9']));
+        $campus2Buildings = $buildings->filter(fn($b) => in_array($b->name, ['B1', 'B10', 'B11', 'ASM', 'B12']));
+        $otherBuildings = $buildings->filter(fn($b) => !in_array($b->name, ['B1', 'B3', 'B5', 'B8', 'B9', 'B10', 'B11', 'ASM', 'B12']));
+        
+        $orderedBuildings = collect();
+        foreach(['B3', 'B5', 'B8', 'B9'] as $n) { if($b = $buildings->firstWhere('name', $n)) $orderedBuildings->push($b); }
+        foreach(['B1', 'B10', 'B11', 'ASM', 'B12'] as $n) { if($b = $buildings->firstWhere('name', $n)) $orderedBuildings->push($b); }
+        foreach($otherBuildings as $b) { $orderedBuildings->push($b); }
+        
+        $c1Count = $campus1Buildings->count();
+        $c2Count = $campus2Buildings->count();
+    @endphp
+    
+    <div class="overflow-x-auto w-full border border-gray-200 shadow-sm mt-6 mb-8">
+        <table class="w-full text-sm text-left whitespace-nowrap border-collapse" id="electricity-matrix" data-coal-factor="{{ $coalFactor }}">
+            <thead class="bg-white text-gray-900 border-b-2 border-gray-900">
+                <tr>
+                    <th rowspan="2" class="px-4 py-2 border border-gray-300 font-bold align-middle w-64 bg-gray-50 text-center">
+                        CO2 Emission for Electricity<br>(Supply: TNB)
+                    </th>
+                    @if($c1Count > 0)
+                        <th colspan="{{ $c1Count }}" class="px-4 py-2 border border-gray-300 font-bold text-center bg-gray-50">Campus 1</th>
+                    @endif
+                    @if($c2Count > 0)
+                        <th colspan="{{ $c2Count }}" class="px-4 py-2 border border-gray-300 font-bold text-center bg-gray-50">Campus 2</th>
+                    @endif
+                    @if($otherBuildings->count() > 0)
+                        <th colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 font-bold text-center bg-gray-50">Other</th>
+                    @endif
+                    <th rowspan="2" class="px-4 py-2 border border-gray-300 font-bold text-center align-middle bg-gray-50">
+                        Total GET<br>
+                        <span id="header_total_get">0.00</span>
+                    </th>
+                </tr>
+                <tr>
+                    @if($c1Count > 0)
+                        <!-- Campus 1 GET row -->
+                        <th colspan="{{ ceil($c1Count / 2) }}" class="px-4 py-1 border border-gray-300 font-bold text-center bg-gray-50">GET (kWh)</th>
+                        <th colspan="{{ floor($c1Count / 2) }}" class="px-4 py-1 border border-gray-300 font-bold text-center bg-gray-50">
+                            <input type="text" id="inp_c1_get" class="matrix-input w-full text-center border-0 bg-transparent font-bold focus:ring-0 p-0" placeholder="0.00" value="5,280,000.00" oninput="calcElectricityMatrix()">
+                        </th>
+                    @endif
+                    @if($c2Count > 0)
+                        <!-- Campus 2 GET row -->
+                        <th colspan="{{ ceil($c2Count / 2) }}" class="px-4 py-1 border border-gray-300 font-bold text-center bg-gray-50">GET (kWh)</th>
+                        <th colspan="{{ floor($c2Count / 2) }}" class="px-4 py-1 border border-gray-300 font-bold text-center bg-gray-50">
+                            <input type="text" id="inp_c2_get" class="matrix-input w-full text-center border-0 bg-transparent font-bold focus:ring-0 p-0" placeholder="0.00" value="4,137,000.00" oninput="calcElectricityMatrix()">
+                        </th>
+                    @endif
+                    @if($otherBuildings->count() > 0)
+                        <th colspan="{{ $otherBuildings->count() }}" class="px-4 py-1 border border-gray-300 bg-gray-50"></th>
+                    @endif
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 border border-gray-300 font-bold bg-gray-50"></th>
+                    @foreach($orderedBuildings as $building)
+                        <th class="px-3 py-2 border border-gray-300 text-center font-bold bg-gray-50">{{ $building->name }}</th>
+                    @endforeach
+                    <th class="px-4 py-2 border border-gray-300 text-center font-bold bg-gray-50">Total</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                <tr>
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Purchased electricity (kWh)</td>
+                    @php $elecSource = $sources->firstWhere('name', 'Purchased Electricity'); @endphp
+                    @foreach($orderedBuildings as $building)
+                        <td class="px-2 py-2 border border-gray-300 text-right">
+                            @if($elecSource)
+                            <input type="text" inputmode="decimal"
+                                name="emissions[{{ $building->id }}][{{ $elecSource->id }}]" 
+                                class="matrix-input w-full px-2 py-1 text-right text-sm border-gray-200 rounded input-purchased-elec"
+                                value="{{ isset($existingEmissions[$building->id][$elecSource->id]) ? number_format($existingEmissions[$building->id][$elecSource->id], 2, '.', '') : '' }}"
+                                placeholder="0"
+                                data-campus="{{ $campus1Buildings->contains('id', $building->id) ? 'c1' : ($campus2Buildings->contains('id', $building->id) ? 'c2' : 'other') }}"
+                                oninput="calcElectricityMatrix()"
+                            >
+                            @endif
+                        </td>
+                    @endforeach
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="total_purchased_elec">0.00</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Total purchased electricity (kWh)</td>
+                    @if($c1Count > 0)
+                        <td colspan="{{ $c1Count }}" class="px-4 py-1 border border-gray-300 text-center bg-gray-50">
+                            <input type="text" id="inp_c1_total_purchased" class="matrix-input w-full text-center border-0 bg-transparent font-bold focus:ring-0 p-0" placeholder="0.00" value="6,095,551.00" oninput="calcElectricityMatrix()">
+                        </td>
+                    @endif
+                    @if($c2Count > 0)
+                        <td colspan="{{ $c2Count }}" class="px-4 py-1 border border-gray-300 text-center bg-gray-50">
+                            <input type="text" id="inp_c2_total_purchased" class="matrix-input w-full text-center border-0 bg-transparent font-bold focus:ring-0 p-0" placeholder="0.00" value="4,395,110.00" oninput="calcElectricityMatrix()">
+                        </td>
+                    @endif
+                    @if($otherBuildings->count() > 0)
+                        <td colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50"></td>
+                    @endif
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="grand_total_purchased_elec">0.00</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Percentage by building (%)</td>
+                    @foreach($orderedBuildings as $building)
+                        <td class="px-2 py-2 border border-gray-300 text-right bg-gray-50 cell-percentage">0.00</td>
+                    @endforeach
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800"></td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Adjusted (kWh)</td>
+                    @foreach($orderedBuildings as $building)
+                        <td class="px-2 py-2 border border-gray-300 text-right bg-gray-50 cell-adjusted">0.00</td>
+                    @endforeach
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800"></td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Purchased electricity- Coal (kWh)</td>
+                    @if($c1Count > 0)
+                        <td colspan="{{ $c1Count }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50" id="c1_total_coal">0.00</td>
+                    @endif
+                    @if($c2Count > 0)
+                        <td colspan="{{ $c2Count }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50" id="c2_total_coal">0.00</td>
+                    @endif
+                    @if($otherBuildings->count() > 0)
+                        <td colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50"></td>
+                    @endif
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="grand_total_coal">0.00</td>
+                </tr>
+                <tr>
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Purchased electricity- Coal (kWh)</td>
+                    @foreach($orderedBuildings as $building)
+                        <td class="px-2 py-2 border border-gray-300 text-right bg-gray-50 cell-purchased-coal">0.00</td>
+                    @endforeach
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="total_purchased_coal">0.00</td>
+                </tr>
+                <tr class="bg-[#dcfce7]">
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-green-800">CO2 Emission (Coal)</td>
+                    @foreach($orderedBuildings as $building)
+                        <td class="px-2 py-2 border border-gray-300 text-right text-green-800 font-medium cell-co2-coal">0.00</td>
+                    @endforeach
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-green-800" id="total_co2_coal">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- SOLAR TABLE (Same styling) -->
+    <div class="overflow-x-auto w-full border border-gray-200 shadow-sm mt-6 mb-8">
+        <table class="w-full text-sm text-left whitespace-nowrap border-collapse" id="solar-matrix" data-factor="{{ $pvFactor }}">
+            <thead class="bg-white text-gray-900 border-b-2 border-gray-900">
+                <tr>
+                    <th class="px-4 py-2 border border-gray-300 font-bold bg-gray-50 text-center align-middle w-64">CO2 Emission for Electricity<br>(Supply: Self-generated PV)</th>
+                    @if($c1Count > 0)
+                        <th colspan="{{ $c1Count }}" class="px-4 py-2 border border-gray-300 font-bold text-center bg-gray-50">Campus 1</th>
+                    @endif
+                    @if($c2Count > 0)
+                        <th colspan="{{ $c2Count }}" class="px-4 py-2 border border-gray-300 font-bold text-center bg-gray-50">Campus 2</th>
+                    @endif
+                    @if($otherBuildings->count() > 0)
+                        <th colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 font-bold text-center bg-gray-50">Other</th>
+                    @endif
+                    <th class="px-4 py-2 border border-gray-300 text-center font-bold bg-gray-50">Total</th>
+                </tr>
+                <tr>
+                    <th class="px-4 py-2 border border-gray-300 font-bold bg-gray-50"></th>
+                    @foreach($orderedBuildings as $building)
+                        <th class="px-3 py-2 border border-gray-300 text-center font-bold bg-gray-50">{{ $building->name }}</th>
+                    @endforeach
+                    <th class="px-4 py-2 border border-gray-300 text-center font-bold bg-gray-50">Total</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                <tr>
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Solar Generated Electricity (kWh)</td>
+                    @php $solarSource = $sources->firstWhere('name', 'Self-generated PV Electricity'); @endphp
+                    @foreach($orderedBuildings as $building)
+                        <td class="px-2 py-2 border border-gray-300 text-right">
+                            @if($solarSource)
+                            <input type="text" inputmode="decimal"
+                                name="emissions[{{ $building->id }}][{{ $solarSource->id }}]" 
+                                class="matrix-input w-full px-2 py-1 text-right text-sm border-gray-200 rounded input-solar"
+                                value="{{ isset($existingEmissions[$building->id][$solarSource->id]) ? number_format($existingEmissions[$building->id][$solarSource->id], 2, '.', '') : '' }}"
+                                placeholder="0.00"
+                                oninput="calcSolarMatrix()"
+                            >
+                            @endif
+                        </td>
+                    @endforeach
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="total_solar_elec">0.00</td>
+                </tr>
+                <tr class="bg-[#dcfce7]">
+                    <td class="px-4 py-2 border border-gray-300 font-medium text-green-800">CO2 Emission for Self-PV</td>
+                    @foreach($orderedBuildings as $building)
+                        <td class="px-2 py-2 border border-gray-300 text-right text-green-800 font-medium cell-solar-co2">0.00</td>
+                    @endforeach
+                    <td class="px-4 py-2 text-right border border-gray-300 font-bold text-green-800" id="total_solar_co2">0.00</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+<!-- NEW SEPARATE TABLES -->
+<div class="mt-8 space-y-8 mb-8">
+    @php
+        $dieselSource = $sources->firstWhere('name', 'Stationary Energy (Diesel)');
+        $petrolSource = $sources->firstWhere('name', 'Transportation Petrol');
+        $refrigerantSource = $sources->firstWhere('name', 'IPPU/Refrigerant');
+        
+        $boiler = $machineryCategories->get($dieselSource->id ?? 0)?->firstWhere('name', 'Boiler');
+        $forklift = $machineryCategories->get($dieselSource->id ?? 0)?->firstWhere('name', 'Forklift Diesel');
+        $genset = $machineryCategories->get($dieselSource->id ?? 0)?->firstWhere('name', 'GenSet Diesel');
+        
+        $os = $machineryCategories->get($petrolSource->id ?? 0)?->firstWhere('name', 'OS');
+        $of = $machineryCategories->get($petrolSource->id ?? 0)?->firstWhere('name', 'OF');
+        
+        $r22 = $machineryCategories->get($refrigerantSource->id ?? 0)?->firstWhere('name', 'R22');
+        $r407c = $machineryCategories->get($refrigerantSource->id ?? 0)?->firstWhere('name', 'R407C');
+        $r134a = $machineryCategories->get($refrigerantSource->id ?? 0)?->firstWhere('name', 'R134A');
+        
+        // Single dummy/first building for facility-wide entries
+        $mainBuilding = $buildings->first();
+    @endphp
+
+    @if($dieselSource)
+    <div class="overflow-x-auto w-full border border-gray-200 rounded-xl shadow-sm">
+        <h3 class="bg-gray-100 px-4 py-2 font-bold text-gray-700">Diesel Breakdown</h3>
+        <table class="w-full text-sm text-left whitespace-nowrap">
+            <thead class="bg-[#009B77] text-white">
+                <tr>
+                    <th class="px-4 py-3 border-b border-r border-[#008264] text-xs font-bold uppercase tracking-wider w-48">Category</th>
+                    @foreach($buildings as $building)
+                        <th class="px-3 py-3 border-b border-r border-[#008264] text-center text-xs font-bold uppercase tracking-wider">{{ $building->name }}</th>
+                    @endforeach
+                    <th class="px-4 py-3 border-b border-[#008264] text-right text-xs font-bold uppercase tracking-wider">Total</th>
+                </tr>
+            </thead>
+            <tbody class="bg-white">
+                @foreach([$boiler, $forklift, $genset] as $cat)
+                @if($cat)
+                <tr class="hover:bg-[#009B77]/5 transition-colors border-b border-gray-100">
+                    <td class="px-4 py-3 border-r border-gray-200 font-medium text-gray-900">{{ $cat->name }} (L)</td>
+                    
+                    @foreach($buildings as $building)
+                    <td class="px-2 py-2 border-r border-gray-100 align-top">
+                        <input type="text" inputmode="decimal"
+                            name="emissions[{{ $building->id }}][{{ $dieselSource->id }}][{{ $cat->id }}]" 
+                            class="matrix-input w-full px-2 py-1.5 text-right text-sm border-gray-200 focus:border-[#009B77] focus:ring-[#009B77] rounded shadow-sm bg-white row-calc-diesel-{{ $cat->id }}"
+                            value="{{ isset($existingEmissions[$building->id][$dieselSource->id . '_' . $cat->id]) ? number_format($existingEmissions[$building->id][$dieselSource->id . '_' . $cat->id], 0, '.', ',') : '' }}"
+                            placeholder="0"
+                            oninput="formatInputAndCalcRow(this, 'row-calc-diesel-{{ $cat->id }}', 'total-diesel-{{ $cat->id }}')"
+                        >
+                    </td>
+                    @endforeach
+                    
+                    <td class="px-4 py-2 text-right bg-slate-50 font-bold text-gray-800" id="total-diesel-{{ $cat->id }}">0</td>
+                </tr>
+                @endif
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+    @endif
+    
+    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
+        @if($petrolSource)
+        <div class="overflow-x-auto w-full border border-gray-200 rounded-xl shadow-sm">
+            <h3 class="bg-gray-100 px-4 py-2 font-bold text-gray-700 border-b border-gray-200">Petrol Breakdown</h3>
+            <table class="w-full text-sm text-left whitespace-nowrap">
+                <thead class="bg-[#009B77] text-white">
+                    <tr>
+                        <th class="px-4 py-3 border-b border-r border-[#008264] text-xs font-bold uppercase tracking-wider w-32">Source</th>
+                        <th class="px-4 py-3 border-b border-r border-[#008264] text-center text-xs font-bold uppercase tracking-wider">OS (L)</th>
+                        <th class="px-4 py-3 border-b border-r border-[#008264] text-center text-xs font-bold uppercase tracking-wider">OF (L)</th>
+                        <th class="px-4 py-3 border-b border-[#008264] text-right text-xs font-bold uppercase tracking-wider">Total</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    <tr class="hover:bg-[#009B77]/5 transition-colors border-b border-gray-100">
+                        <td class="px-4 py-3 border-r border-gray-200 font-medium text-gray-900">Petrol</td>
+                        
+                        @foreach([$os, $of] as $cat)
+                        <td class="px-2 py-2 border-r border-gray-100 align-top">
+                            @if($cat && $mainBuilding)
+                            <input type="text" inputmode="decimal"
+                                name="emissions[{{ $mainBuilding->id }}][{{ $petrolSource->id }}][{{ $cat->id }}]" 
+                                class="matrix-input w-full px-2 py-1.5 text-right text-sm border-gray-200 focus:border-[#009B77] focus:ring-[#009B77] rounded shadow-sm bg-white row-calc-petrol-single"
+                                value="{{ isset($existingEmissions[$mainBuilding->id][$petrolSource->id . '_' . $cat->id]) ? number_format($existingEmissions[$mainBuilding->id][$petrolSource->id . '_' . $cat->id], 2, '.', ',') : '' }}"
+                                placeholder="0.00"
+                                oninput="formatInputAndCalcRow(this, 'row-calc-petrol-single', 'total-petrol-single')"
+                            >
+                            @endif
+                        </td>
+                        @endforeach
+                        
+                        <td class="px-4 py-2 text-right bg-slate-50 font-bold text-gray-800" id="total-petrol-single">0.00</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        @endif
+        
+        @if($refrigerantSource)
+        <div class="overflow-x-auto w-full border border-gray-200 rounded-xl shadow-sm">
+            <h3 class="bg-gray-100 px-4 py-2 font-bold text-gray-700 border-b border-gray-200">Refrigerant Breakdown</h3>
+            <table class="w-full text-sm text-left whitespace-nowrap">
+                <thead class="bg-[#009B77] text-white">
+                    <tr>
+                        <th class="px-4 py-3 border-b border-r border-[#008264] text-xs font-bold uppercase tracking-wider w-32">Source</th>
+                        <th class="px-4 py-3 border-b border-[#008264] text-left text-xs font-bold uppercase tracking-wider">Usage (KG)</th>
+                    </tr>
+                </thead>
+                <tbody class="bg-white">
+                    @foreach([$r22, $r134a, $r407c] as $index => $cat)
+                    @if($cat)
+                    <tr class="hover:bg-[#009B77]/5 transition-colors border-b border-gray-100">
+                        @if($index === 0)
+                        <td class="px-4 py-3 border-r border-gray-200 font-medium text-gray-900 align-top" rowspan="3">Refrigerant</td>
+                        @endif
+                        <td class="px-2 py-2 border-r border-gray-100 align-middle flex items-center gap-2">
+                            <input type="text" inputmode="decimal"
+                                name="emissions[{{ $mainBuilding->id }}][{{ $refrigerantSource->id }}][{{ $cat->id }}]" 
+                                class="matrix-input w-32 px-2 py-1.5 text-right text-sm border-gray-200 focus:border-[#009B77] focus:ring-[#009B77] rounded shadow-sm bg-white"
+                                value="{{ isset($existingEmissions[$mainBuilding->id][$refrigerantSource->id . '_' . $cat->id]) ? number_format($existingEmissions[$mainBuilding->id][$refrigerantSource->id . '_' . $cat->id], 3, '.', ',') : '' }}"
+                                placeholder="0.000"
+                                oninput="let v = this.value.replace(/[^0-9.]/g, ''); let p = v.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); this.value = p.join('.');"
+                            >
+                            <span class="font-semibold text-gray-700">{{ $cat->name }}</span>
+                        </td>
+                    </tr>
+                    @endif
+                    @endforeach
+                </tbody>
+            </table>
+        </div>
+        @endif
+    </div>
+</div>
 
                 <div class="p-4 border-t border-slate-200 bg-slate-50 flex justify-end items-center gap-4 rounded-b-2xl">
                     <span class="text-sm text-gray-500 italic hidden sm:inline-block">Unsaved changes will be lost</span>
@@ -451,6 +869,42 @@
             }
         });
         
+
+            // Matrix Logic for extra tables
+            window.formatInputAndCalcRow = function(input, rowClass, totalId) {
+                let v = input.value.replace(/[^0-9.]/g, '');
+                if (v === '') {
+                    input.value = '';
+                } else {
+                    let p = v.split('.');
+                    p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ',');
+                    input.value = p.join('.');
+                }
+
+                let total = 0;
+                document.querySelectorAll('.' + rowClass).forEach(el => {
+                    let val = parseFloat(el.value.replace(/,/g, ''));
+                    if (!isNaN(val)) total += val;
+                });
+
+                const totalEl = document.getElementById(totalId);
+                if (totalEl) {
+                    if (input.placeholder && input.placeholder.includes('.')) {
+                        let decimals = input.placeholder.split('.')[1].length;
+                        totalEl.textContent = total.toLocaleString('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals });
+                    } else {
+                        totalEl.textContent = total.toLocaleString('en-US');
+                    }
+                }
+            };
+            
+            document.querySelectorAll('[class*="row-calc-"]').forEach(input => {
+                if (input.value) {
+                    const event = new Event('input', { bubbles: true });
+                    input.dispatchEvent(event);
+                }
+            });
+
         window.reloadPage = function() {
             const month = document.getElementById('period_month').value;
             const year = document.getElementById('period_year').value;
@@ -600,6 +1054,201 @@
                 }
             });
         })();
+        // Setup AJAX for factors
+        function setupAjaxFactors() {
+            const elCoal = document.getElementById('inp_coal_factor');
+            const elRen = document.getElementById('inp_renewable_factor');
+            const elPv = document.getElementById('inp_pv_factor');
+            const elBoiler = document.getElementById('inp_boiler_factor');
+            
+            function saveElectricity() {
+                if(!elCoal || !elRen || !elPv) return;
+                const formData = new FormData();
+                formData.append('_token', '{{ csrf_token() }}');
+                formData.append('month', '{{ $selectedMonth }}');
+                formData.append('year', '{{ $selectedYear }}');
+                formData.append('coal_factor', elCoal.value);
+                formData.append('renewable_factor', elRen.value);
+                formData.append('pv_factor', elPv.value);
+                
+                fetch('{{ route("data-entry.update-electricity-factors") }}', {
+                    method: 'POST',
+                    body: formData,
+                    headers: { 'Accept': 'application/json' }
+                }).then(() => {
+                    [elCoal, elRen, elPv].forEach(el => {
+                        el.style.backgroundColor = '#e6fffa';
+                        setTimeout(() => el.style.backgroundColor = '', 1000);
+                    });
+                    
+                    const elecMatrix = document.getElementById('electricity-matrix');
+                    if (elecMatrix) {
+                        elecMatrix.dataset.coalFactor = elCoal.value;
+                        if (typeof calcElectricityMatrix === 'function') calcElectricityMatrix();
+                    }
+                    const solarMatrix = document.getElementById('solar-matrix');
+                    if (solarMatrix) {
+                        solarMatrix.dataset.factor = elPv.value;
+                        if (typeof calcSolarMatrix === 'function') calcSolarMatrix();
+                    }
+                });
+            }
+            
+            if(elCoal) elCoal.addEventListener('change', saveElectricity);
+            if(elRen) elRen.addEventListener('change', saveElectricity);
+            if(elPv) elPv.addEventListener('change', saveElectricity);
+            
+            if(elBoiler) {
+                elBoiler.addEventListener('change', function() {
+                    const val = parseFloat(elBoiler.value) || 0;
+                    const tco2ePerLiter = val / 1000;
+                    
+                    const formData = new FormData();
+                    formData.append('_token', '{{ csrf_token() }}');
+                    formData.append('month', '{{ $selectedMonth }}');
+                    formData.append('year', '{{ $selectedYear }}');
+                    formData.append('boiler_factor', tco2ePerLiter);
+                    
+                    fetch('{{ route("data-entry.update-diesel-factors") }}', {
+                        method: 'POST',
+                        body: formData,
+                        headers: { 'Accept': 'application/json' }
+                    }).then(() => {
+                        elBoiler.style.backgroundColor = '#e6fffa';
+                        setTimeout(() => elBoiler.style.backgroundColor = '', 1000);
+                        
+                        const dieselMatrix = document.getElementById('diesel-matrix');
+                        if (dieselMatrix) {
+                            dieselMatrix.dataset.boilerFactor = tco2ePerLiter;
+                            if (typeof calcDieselMatrix === 'function') calcDieselMatrix();
+                        }
+                    });
+                });
+            }
+        }
+        setupAjaxFactors();
+        
+        function calcElectricityMatrix() {
+            const matrix = document.getElementById('electricity-matrix');
+            if (!matrix) return;
+            const coalFactor = parseFloat(matrix.dataset.coalFactor) || 0;
+            
+            const inpC1Get = document.getElementById('inp_c1_get');
+            const inpC2Get = document.getElementById('inp_c2_get');
+            const getC1 = inpC1Get ? parseFloat(inpC1Get.value.replace(/,/g, '')) || 0 : 0;
+            const getC2 = inpC2Get ? parseFloat(inpC2Get.value.replace(/,/g, '')) || 0 : 0;
+            const getMap = { 'c1': getC1, 'c2': getC2, 'other': 0 };
+            
+            const headerTotalGet = document.getElementById('header_total_get');
+            if(headerTotalGet) headerTotalGet.textContent = (getC1 + getC2).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const inputs = Array.from(matrix.querySelectorAll('.input-purchased-elec'));
+            const percentCell = matrix.querySelectorAll('.cell-percentage');
+            const adjCell = matrix.querySelectorAll('.cell-adjusted');
+            const coalCell = matrix.querySelectorAll('.cell-purchased-coal');
+            const co2Cell = matrix.querySelectorAll('.cell-co2-coal');
+            
+            const inpC1TotPurchased = document.getElementById('inp_c1_total_purchased');
+            const inpC2TotPurchased = document.getElementById('inp_c2_total_purchased');
+            const c1TotPurchased = inpC1TotPurchased ? parseFloat(inpC1TotPurchased.value.replace(/,/g, '')) || 0 : 0;
+            const c2TotPurchased = inpC2TotPurchased ? parseFloat(inpC2TotPurchased.value.replace(/,/g, '')) || 0 : 0;
+            const campusPurchased = { 'c1': c1TotPurchased, 'c2': c2TotPurchased, 'other': 0 };
+            
+            let total = 0;
+            inputs.forEach(input => {
+                const val = parseFloat(input.value.replace(/,/g, '')) || 0;
+                total += val;
+            });
+            
+            const elTotal = document.getElementById('total_purchased_elec');
+            if(elTotal) elTotal.textContent = total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const elGrandTotal = document.getElementById('grand_total_purchased_elec');
+            if(elGrandTotal) elGrandTotal.textContent = (c1TotPurchased + c2TotPurchased).toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            let totalCoal = 0;
+            let totalCo2 = 0;
+            let campusCoal = { 'c1': 0, 'c2': 0, 'other': 0 };
+            
+            inputs.forEach((input, index) => {
+                const val = parseFloat(input.value.replace(/,/g, '')) || 0;
+                const campus = input.dataset.campus;
+                const campusTot = campusPurchased[campus] || 0;
+                
+                let pct = 0;
+                if(campusTot > 0) {
+                    pct = val / campusTot;
+                }
+                
+                if (percentCell[index]) percentCell[index].textContent = pct.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                const adjusted = val - (pct * getMap[campus]);
+                if (adjCell[index]) adjCell[index].textContent = adjusted.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                let campTotalCoal = campusTot - getMap[campus];
+                if(campTotalCoal < 0) campTotalCoal = 0; 
+                
+                const coal = pct * campTotalCoal;
+                
+                if (coalCell[index]) coalCell[index].textContent = coal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                const co2 = coal * coalFactor;
+                if (co2Cell[index]) co2Cell[index].textContent = co2.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+                
+                totalCoal += coal;
+                totalCo2 += co2;
+                if(campus) campusCoal[campus] += coal;
+            });
+            
+            const elC1TotCoal = document.getElementById('c1_total_coal');
+            if (elC1TotCoal) elC1TotCoal.textContent = campusCoal['c1'].toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const elC2TotCoal = document.getElementById('c2_total_coal');
+            if (elC2TotCoal) elC2TotCoal.textContent = campusCoal['c2'].toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const elGrandTotalCoal = document.getElementById('grand_total_coal');
+            if(elGrandTotalCoal) elGrandTotalCoal.textContent = totalCoal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const totCoalEl = document.getElementById('total_purchased_coal');
+            if(totCoalEl) totCoalEl.textContent = totalCoal.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const totCo2El = document.getElementById('total_co2_coal');
+            if(totCo2El) totCo2El.textContent = totalCo2.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+    
+        function calcSolarMatrix() {
+            const matrix = document.getElementById('solar-matrix');
+            if (!matrix) return;
+            const factor = parseFloat(matrix.dataset.factor) || 0;
+            
+            const inputs = matrix.querySelectorAll('.input-solar');
+            const co2Cells = matrix.querySelectorAll('.cell-solar-co2');
+            
+            let total = 0;
+            let totalCo2 = 0;
+            
+            inputs.forEach((input, index) => {
+                const val = parseFloat(input.value) || 0;
+                total += val;
+                
+                const co2 = val * factor;
+                totalCo2 += co2;
+                
+                if (co2Cells[index]) co2Cells[index].textContent = co2.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            });
+            
+            const elTotal = document.getElementById('total_solar_elec');
+            if(elTotal) elTotal.textContent = total.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+            
+            const elCo2 = document.getElementById('total_solar_co2');
+            if(elCo2) elCo2.textContent = totalCo2.toLocaleString('en-US', {minimumFractionDigits: 2, maximumFractionDigits: 2});
+        }
+        
+        // Initial calc
+        setTimeout(() => {
+            calcElectricityMatrix();
+            calcSolarMatrix();
+        }, 500);
     </script>
     @endpush
 </x-app-layout>
