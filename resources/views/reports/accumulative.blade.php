@@ -6,117 +6,199 @@
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 overflow-x-auto">
-                    
-                    <div class="mb-4 flex justify-between items-center">
-                        <h3 class="text-lg font-medium text-gray-900">CO2 EMISSION (TOTAL) (MT)</h3>
-                        <form method="GET" action="{{ route('reports.accumulative') }}" class="flex gap-2">
-                            <select name="year" class="border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
-                                @foreach([2024, 2025, 2026] as $y)
-                                    <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
-                                @endforeach
-                            </select>
-                            <x-primary-button type="submit">Filter</x-primary-button>
-                        </form>
-                    </div>
-
-                    <table class="min-w-full divide-y divide-gray-200 border border-gray-300">
-                        <thead class="bg-gray-100">
-                            <tr>
-                                <th scope="col" class="px-6 py-3 text-left text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-r border-gray-300">Month / Plant</th>
-                                
-                                <!-- Buildings -->
-                                @foreach($buildings as $building)
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300">
-                                        {{ $building->name }}
-                                    </th>
-                                @endforeach
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-r border-gray-300">Total Bldgs</th>
-                                
-                                <!-- Zones -->
-                                @foreach($zones as $zone)
-                                    <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gray-50">
-                                        {{ $zone }}
-                                    </th>
-                                @endforeach
-                                <th scope="col" class="px-6 py-3 text-right text-xs font-bold text-gray-700 uppercase tracking-wider border-b border-gray-300 bg-gray-200">
-                                    Grand Total
-                                </th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            @php
-                                $bldgTotals = array_fill_keys($buildings->pluck('name')->toArray(), 0);
-                                $zoneTotals = array_fill_keys($zones->toArray(), 0);
-                                $grandTotal = 0;
-                            @endphp
-
-                            @foreach($matrix as $m => $row)
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border-r border-gray-300">
-                                        {{ $row['month'] }}
-                                    </td>
-                                    
-                                    @php $rowBldgTotal = 0; @endphp
-                                    @foreach($buildings as $building)
-                                        @php
-                                            $val = $row['buildings'][$building->name];
-                                            $bldgTotals[$building->name] += $val;
-                                            $rowBldgTotal += $val;
-                                        @endphp
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500">
-                                            {{ $val > 0 ? number_format($val, 3) : '-' }}
-                                        </td>
-                                    @endforeach
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-gray-700 border-r border-gray-300">
-                                        {{ $rowBldgTotal > 0 ? number_format($rowBldgTotal, 3) : '-' }}
-                                    </td>
-
-                                    @foreach($zones as $zone)
-                                        @php
-                                            $val = $row['zones'][$zone];
-                                            $zoneTotals[$zone] += $val;
-                                        @endphp
-                                        <td class="px-6 py-4 whitespace-nowrap text-sm text-right text-gray-500 bg-gray-50">
-                                            {{ $val > 0 ? number_format($val, 3) : '-' }}
-                                        </td>
-                                    @endforeach
-                                    
-                                    @php $grandTotal += $row['total']; @endphp
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-gray-900 bg-gray-200">
-                                        {{ $row['total'] > 0 ? number_format($row['total'], 3) : '-' }}
-                                    </td>
-                                </tr>
+        <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8 space-y-6">
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg p-6">
+                <form method="GET" action="{{ route('reports.accumulative') }}" class="flex gap-4 items-end">
+                    <div>
+                        <x-input-label for="year" value="Year" />
+                        <select name="year" id="year" class="mt-1 block w-48 border-gray-300 focus:border-indigo-500 focus:ring-indigo-500 rounded-md shadow-sm">
+                            @foreach([2024, 2025, 2026] as $y)
+                                <option value="{{ $y }}" {{ $y == $year ? 'selected' : '' }}>{{ $y }}</option>
                             @endforeach
-                            
-                            <!-- Totals Row -->
-                            <tr class="bg-indigo-50 border-t-2 border-indigo-200">
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-gray-900 border-r border-gray-300">YTD TOTAL</td>
-                                @foreach($buildings as $building)
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-indigo-700">
-                                        {{ $bldgTotals[$building->name] > 0 ? number_format($bldgTotals[$building->name], 3) : '-' }}
-                                    </td>
-                                @endforeach
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-indigo-900 border-r border-gray-300">
-                                    {{ $grandTotal > 0 ? number_format($grandTotal, 3) : '-' }}
-                                </td>
-                                
-                                @foreach($zones as $zone)
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-bold text-right text-indigo-700">
-                                        {{ $zoneTotals[$zone] > 0 ? number_format($zoneTotals[$zone], 3) : '-' }}
-                                    </td>
-                                @endforeach
-                                <td class="px-6 py-4 whitespace-nowrap text-sm font-black text-right text-indigo-900 bg-indigo-100">
-                                    {{ $grandTotal > 0 ? number_format($grandTotal, 3) : '-' }}
-                                </td>
-                            </tr>
-                        </tbody>
-                    </table>
+                        </select>
+                    </div>
+                    <x-primary-button type="submit">Filter</x-primary-button>
+                </form>
+            </div>
 
+            @php
+                $colors = [
+                    'DIESEL' => ['bg' => 'bg-blue-500', 'text' => 'text-white', 'border' => 'border-blue-600', 'light' => 'bg-blue-200'],
+                    'LPG' => ['bg' => 'bg-yellow-400', 'text' => 'text-black', 'border' => 'border-yellow-500', 'light' => 'bg-yellow-200'],
+                    'ELECTRICITY' => ['bg' => 'bg-green-500', 'text' => 'text-white', 'border' => 'border-green-600', 'light' => 'bg-green-200'],
+                    'PETROL' => ['bg' => 'bg-purple-500', 'text' => 'text-white', 'border' => 'border-purple-600', 'light' => 'bg-purple-200'],
+                ];
+            @endphp
+
+            @foreach($reportData as $data)
+            @php
+                $color = $colors[$data['title']] ?? ['bg' => 'bg-gray-500', 'text' => 'text-white', 'border' => 'border-gray-600', 'light' => 'bg-gray-200'];
+            @endphp
+            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="p-4 overflow-x-auto">
+                    <div class="flex gap-6 min-w-max">
+                        
+                        <!-- Table 1: Consumption by Building -->
+                        <div>
+                            <table class="w-full text-xs border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th colspan="{{ $buildings->count() + 2 }}" class="px-2 py-2 border {{ $color['border'] }} {{ $color['bg'] }} {{ $color['text'] }} text-center font-bold uppercase">
+                                            {{ $data['title'] }} CONSUMPTION ({{ $data['unit'] }})
+                                        </th>
+                                    </tr>
+                                    <tr class="bg-gray-100">
+                                        <th class="px-2 py-1 border border-gray-400 text-center font-bold">Month / Plant</th>
+                                        @foreach($buildings as $building)
+                                            <th class="px-2 py-1 border border-gray-400 text-center font-bold">{{ $building->name }}</th>
+                                        @endforeach
+                                        <th class="px-2 py-1 border border-gray-400 text-center font-bold w-20">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $bldgTotals = array_fill_keys($buildings->pluck('name')->toArray(), 0);
+                                        $grandUsageTotal = 0;
+                                    @endphp
+                                    @foreach($data['matrix'] as $m => $row)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-2 py-1 border border-gray-300 font-bold text-center">{{ $row['month'] }}</td>
+                                            @foreach($buildings as $building)
+                                                @php $bldgTotals[$building->name] += $row['buildings'][$building->name]; @endphp
+                                                <td class="px-2 py-1 border border-gray-300 text-right">
+                                                    {{ $row['buildings'][$building->name] > 0 ? number_format($row['buildings'][$building->name], 2) : '-' }}
+                                                </td>
+                                            @endforeach
+                                            @php $grandUsageTotal += $row['usage_total']; @endphp
+                                            <td class="px-2 py-1 border border-gray-300 text-right font-bold">
+                                                {{ $row['usage_total'] > 0 ? number_format($row['usage_total'], 2) : '-' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="bg-gray-100">
+                                        <td class="px-2 py-1 border border-gray-400 font-bold text-center">Total</td>
+                                        @foreach($buildings as $building)
+                                            <td class="px-2 py-1 border border-gray-400 text-right font-bold">
+                                                {{ $bldgTotals[$building->name] > 0 ? number_format($bldgTotals[$building->name], 2) : '-' }}
+                                            </td>
+                                        @endforeach
+                                        <td class="px-2 py-1 border border-gray-400 text-right font-bold">
+                                            {{ $grandUsageTotal > 0 ? number_format($grandUsageTotal, 2) : '-' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table 2: Consumption by Zone -->
+                        <div>
+                            <table class="w-full text-xs border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th colspan="{{ $zones->count() + 2 }}" class="px-2 py-2 border {{ $color['border'] }} {{ $color['bg'] }} {{ $color['text'] }} text-center font-bold uppercase">
+                                            {{ $data['title'] }} CONSUMPTION ({{ $data['unit'] }})
+                                        </th>
+                                    </tr>
+                                    <tr class="bg-gray-100">
+                                        <th class="px-2 py-1 border border-gray-400 text-center font-bold">Month / Plant</th>
+                                        @foreach($zones as $zone)
+                                            <th class="px-2 py-1 border border-gray-400 text-center font-bold">{{ $zone }}</th>
+                                        @endforeach
+                                        <th class="px-2 py-1 border border-gray-400 text-center font-bold w-20">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $zoneTotals = array_fill_keys($zones->toArray(), 0);
+                                        $grandUsageTotal = 0;
+                                    @endphp
+                                    @foreach($data['matrix'] as $m => $row)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-2 py-1 border border-gray-300 font-bold text-center">{{ $row['month'] }}</td>
+                                            @foreach($zones as $zone)
+                                                @php $zoneTotals[$zone] += $row['zones'][$zone]; @endphp
+                                                <td class="px-2 py-1 border border-gray-300 text-right">
+                                                    {{ $row['zones'][$zone] > 0 ? number_format($row['zones'][$zone], 2) : '-' }}
+                                                </td>
+                                            @endforeach
+                                            @php $grandUsageTotal += $row['usage_total']; @endphp
+                                            <td class="px-2 py-1 border border-gray-300 text-right font-bold">
+                                                {{ $row['usage_total'] > 0 ? number_format($row['usage_total'], 2) : '-' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="bg-gray-100">
+                                        <td class="px-2 py-1 border border-gray-400 font-bold text-center">Total</td>
+                                        @foreach($zones as $zone)
+                                            <td class="px-2 py-1 border border-gray-400 text-right font-bold">
+                                                {{ $zoneTotals[$zone] > 0 ? number_format($zoneTotals[$zone], 2) : '-' }}
+                                            </td>
+                                        @endforeach
+                                        <td class="px-2 py-1 border border-gray-400 text-right font-bold">
+                                            {{ $grandUsageTotal > 0 ? number_format($grandUsageTotal, 2) : '-' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                        <!-- Table 3: CO2 Emission -->
+                        <div>
+                            <table class="w-full text-xs border-collapse">
+                                <thead>
+                                    <tr>
+                                        <th colspan="{{ $buildings->count() + 2 }}" class="px-2 py-2 border {{ $color['border'] }} {{ $color['light'] }} text-black text-center font-bold uppercase">
+                                            CO2 EMISSION ({{ $data['title'] }}) (kg)
+                                        </th>
+                                    </tr>
+                                    <tr class="bg-gray-100">
+                                        <th class="px-2 py-1 border border-gray-400 text-center font-bold">Month / Plant</th>
+                                        @foreach($buildings as $building)
+                                            <th class="px-2 py-1 border border-gray-400 text-center font-bold">{{ $building->name }}</th>
+                                        @endforeach
+                                        <th class="px-2 py-1 border border-gray-400 text-center font-bold w-20">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @php
+                                        $co2Totals = array_fill_keys($buildings->pluck('name')->toArray(), 0);
+                                        $grandCo2Total = 0;
+                                    @endphp
+                                    @foreach($data['matrix'] as $m => $row)
+                                        <tr class="hover:bg-gray-50">
+                                            <td class="px-2 py-1 border border-gray-300 font-bold text-center">{{ $row['month'] }}</td>
+                                            @foreach($buildings as $building)
+                                                @php $co2Totals[$building->name] += $row['co2_buildings'][$building->name]; @endphp
+                                                <td class="px-2 py-1 border border-gray-300 text-right">
+                                                    {{ $row['co2_buildings'][$building->name] > 0 ? number_format($row['co2_buildings'][$building->name], 2) : '-' }}
+                                                </td>
+                                            @endforeach
+                                            @php $grandCo2Total += $row['co2_total']; @endphp
+                                            <td class="px-2 py-1 border border-gray-300 text-right font-bold">
+                                                {{ $row['co2_total'] > 0 ? number_format($row['co2_total'], 2) : '-' }}
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                    <tr class="bg-gray-100">
+                                        <td class="px-2 py-1 border border-gray-400 font-bold text-center">Total</td>
+                                        @foreach($buildings as $building)
+                                            <td class="px-2 py-1 border border-gray-400 text-right font-bold">
+                                                {{ $co2Totals[$building->name] > 0 ? number_format($co2Totals[$building->name], 2) : '-' }}
+                                            </td>
+                                        @endforeach
+                                        <td class="px-2 py-1 border border-gray-400 text-right font-bold">
+                                            {{ $grandCo2Total > 0 ? number_format($grandCo2Total, 2) : '-' }}
+                                        </td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                        </div>
+
+                    </div>
                 </div>
             </div>
+            @endforeach
+
         </div>
     </div>
 </x-app-layout>

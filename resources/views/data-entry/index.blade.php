@@ -133,8 +133,8 @@
                     <div>
                         <x-input-label for="inp_coal_factor" :value="__('Coal')" class="text-gray-600 font-medium" />
                         <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_coal_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $coalFactor }}" />
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <x-text-input id="inp_coal_factor" class="block w-full pr-28 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $coalFactor }}" />
+                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
                                 <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
                             </div>
                         </div>
@@ -142,8 +142,8 @@
                     <div>
                         <x-input-label for="inp_renewable_factor" :value="__('Renewable')" class="text-gray-600 font-medium" />
                         <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_renewable_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $renewableFactor }}" />
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <x-text-input id="inp_renewable_factor" class="block w-full pr-28 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $renewableFactor }}" />
+                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
                                 <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
                             </div>
                         </div>
@@ -152,8 +152,8 @@
                     <div>
                         <x-input-label for="inp_pv_factor" :value="__('Self-generated PV')" class="text-gray-600 font-medium" />
                         <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_pv_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $pvFactor }}" />
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <x-text-input id="inp_pv_factor" class="block w-full pr-28 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $pvFactor }}" />
+                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
                                 <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
                             </div>
                         </div>
@@ -177,8 +177,8 @@
                     <div>
                         <x-input-label for="inp_boiler_factor" :value="__('kgCO2e/liter')" class="text-gray-600 font-medium" />
                         <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_boiler_factor" class="block w-full pr-12 transition-colors border-gray-400 focus:border-orange-500 focus:ring-orange-500" type="number" step="any" inputmode="decimal" value="{{ number_format($boilerFactor * 1000, 2, '.', '') }}" />
-                            <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                            <x-text-input id="inp_boiler_factor" class="block w-full pr-24 transition-colors border-gray-400 focus:border-orange-500 focus:ring-orange-500" type="number" step="any" inputmode="decimal" value="{{ number_format($boilerFactor * 1000, 2, '.', '') }}" />
+                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
                                 <span class="text-gray-500 sm:text-sm">kgCO2e</span>
                             </div>
                         </div>
@@ -205,11 +205,11 @@
                         <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Period</span>
                         <div class="flex items-center gap-1.5">
                             <div class="w-32">
-                                <x-custom-select name="month" id="period_month" :options="$months" :selected="$selectedMonth" onchange="reloadPage()" buttonClass="border border-gray-200 bg-gray-50 py-1 pl-3 pr-8 font-semibold text-gray-700 hover:bg-gray-100 focus:border-[#009B77] focus:ring-1 focus:ring-[#009B77] rounded-md shadow-sm" />
+                                <x-custom-select name="month" id="period_month" :options="$months" :selected="$selectedMonth" onchange="reloadPage()" buttonClass="border border-gray-200 bg-gray-50 py-1 pl-3 pr-8 font-semibold text-gray-700 hover:bg-gray-50 focus:border-[#009B77] focus:ring-1 focus:ring-[#009B77] rounded-md shadow-sm" />
                             </div>
                             <div class="w-24">
                                 @php $yearOpts = array_combine($years, $years); @endphp
-                                <x-custom-select name="year" id="period_year" :options="$yearOpts" :selected="$selectedYear" onchange="reloadPage()" buttonClass="border border-gray-200 bg-gray-50 py-1 pl-3 pr-8 font-semibold text-gray-700 hover:bg-gray-100 focus:border-[#009B77] focus:ring-1 focus:ring-[#009B77] rounded-md shadow-sm" />
+                                <x-custom-select name="year" id="period_year" :options="$yearOpts" :selected="$selectedYear" onchange="reloadPage()" buttonClass="border border-gray-200 bg-gray-50 py-1 pl-3 pr-8 font-semibold text-gray-700 hover:bg-gray-50 focus:border-[#009B77] focus:ring-1 focus:ring-[#009B77] rounded-md shadow-sm" />
                             </div>
                         </div>
                     </div>
@@ -428,54 +428,54 @@
                     @endforeach
                     <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="total_purchased_elec">0.00</td>
                 </tr>
-                <tr>
+                <tr class="bg-gray-50">
                     <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Total purchased electricity (kWh)</td>
                     @if($c1Count > 0)
-                        <td colspan="{{ $c1Count }}" class="px-4 py-1 border border-gray-300 text-center bg-gray-50">
+                        <td colspan="{{ $c1Count }}" class="px-4 py-1 border border-gray-300 text-center">
                             <input type="text" id="inp_c1_total_purchased" class="matrix-input w-full text-center border-0 bg-transparent font-bold focus:ring-0 p-0" placeholder="0.00" value="6,095,551.00" oninput="calcElectricityMatrix()">
                         </td>
                     @endif
                     @if($c2Count > 0)
-                        <td colspan="{{ $c2Count }}" class="px-4 py-1 border border-gray-300 text-center bg-gray-50">
+                        <td colspan="{{ $c2Count }}" class="px-4 py-1 border border-gray-300 text-center">
                             <input type="text" id="inp_c2_total_purchased" class="matrix-input w-full text-center border-0 bg-transparent font-bold focus:ring-0 p-0" placeholder="0.00" value="4,395,110.00" oninput="calcElectricityMatrix()">
                         </td>
                     @endif
                     @if($otherBuildings->count() > 0)
-                        <td colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50"></td>
+                        <td colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 text-center"></td>
                     @endif
                     <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="grand_total_purchased_elec">0.00</td>
                 </tr>
                 <tr>
                     <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Percentage by building (%)</td>
                     @foreach($orderedBuildings as $building)
-                        <td class="px-2 py-2 border border-gray-300 text-right bg-gray-50 cell-percentage">0.00</td>
+                        <td class="px-2 py-2 border border-gray-300 text-right cell-percentage">0.00</td>
                     @endforeach
                     <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800"></td>
                 </tr>
-                <tr>
+                <tr class="bg-gray-50">
                     <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Adjusted (kWh)</td>
                     @foreach($orderedBuildings as $building)
-                        <td class="px-2 py-2 border border-gray-300 text-right bg-gray-50 cell-adjusted">0.00</td>
+                        <td class="px-2 py-2 border border-gray-300 text-right cell-adjusted">0.00</td>
                     @endforeach
                     <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800"></td>
                 </tr>
                 <tr>
                     <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Purchased electricity- Coal (kWh)</td>
                     @if($c1Count > 0)
-                        <td colspan="{{ $c1Count }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50" id="c1_total_coal">0.00</td>
+                        <td colspan="{{ $c1Count }}" class="px-4 py-2 border border-gray-300 text-center" id="c1_total_coal">0.00</td>
                     @endif
                     @if($c2Count > 0)
-                        <td colspan="{{ $c2Count }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50" id="c2_total_coal">0.00</td>
+                        <td colspan="{{ $c2Count }}" class="px-4 py-2 border border-gray-300 text-center" id="c2_total_coal">0.00</td>
                     @endif
                     @if($otherBuildings->count() > 0)
-                        <td colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 text-center bg-gray-50"></td>
+                        <td colspan="{{ $otherBuildings->count() }}" class="px-4 py-2 border border-gray-300 text-center"></td>
                     @endif
                     <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="grand_total_coal">0.00</td>
                 </tr>
-                <tr>
+                <tr class="bg-gray-50">
                     <td class="px-4 py-2 border border-gray-300 font-medium text-gray-900">Purchased electricity- Coal (kWh)</td>
                     @foreach($orderedBuildings as $building)
-                        <td class="px-2 py-2 border border-gray-300 text-right bg-gray-50 cell-purchased-coal">0.00</td>
+                        <td class="px-2 py-2 border border-gray-300 text-right cell-purchased-coal">0.00</td>
                     @endforeach
                     <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="total_purchased_coal">0.00</td>
                 </tr>
@@ -569,7 +569,7 @@
 
     @if($dieselSource)
     <div class="overflow-x-auto w-full border border-gray-200 rounded-xl shadow-sm">
-        <h3 class="bg-gray-100 px-4 py-2 font-bold text-gray-700">Diesel Breakdown</h3>
+        <h3 class="bg-gray-50 px-4 py-2 font-bold text-gray-700">Diesel Breakdown</h3>
         <table class="w-full text-sm text-left whitespace-nowrap">
             <thead class="bg-[#009B77] text-white">
                 <tr>
@@ -610,7 +610,7 @@
     <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mt-6">
         @if($petrolSource)
         <div class="overflow-x-auto w-full border border-gray-200 rounded-xl shadow-sm">
-            <h3 class="bg-gray-100 px-4 py-2 font-bold text-gray-700 border-b border-gray-200">Petrol Breakdown</h3>
+            <h3 class="bg-gray-50 px-4 py-2 font-bold text-gray-700 border-b border-gray-200">Petrol Breakdown</h3>
             <table class="w-full text-sm text-left whitespace-nowrap">
                 <thead class="bg-[#009B77] text-white">
                     <tr>
@@ -647,7 +647,7 @@
         
         @if($refrigerantSource)
         <div class="overflow-x-auto w-full border border-gray-200 rounded-xl shadow-sm">
-            <h3 class="bg-gray-100 px-4 py-2 font-bold text-gray-700 border-b border-gray-200">Refrigerant Breakdown</h3>
+            <h3 class="bg-gray-50 px-4 py-2 font-bold text-gray-700 border-b border-gray-200">Refrigerant Breakdown</h3>
             <table class="w-full text-sm text-left whitespace-nowrap">
                 <thead class="bg-[#009B77] text-white">
                     <tr>
