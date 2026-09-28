@@ -236,11 +236,28 @@ class DataEntryController extends Controller
                 if ($weight !== null && $weight !== '' && $type) {
                     $weight = (float) str_replace(',', '', $weight);
 
-                    $factor = \App\Models\ConversionFactor::where('emission_source_id', $refrigerantSource->id)
-                        ->where('effective_date', '<=', "{$year}-{$month}-01")
-                        ->orderBy('effective_date', 'desc')
-                        ->first();
-                    $multiplier = $factor ? $factor->multiplier : 0;
+                    $machinery = \App\Models\MachineryCategory::find($type);
+                    $multiplier = 2.1; // Default fallback
+
+                    if ($machinery) {
+                        $dbFactor = \App\Models\ConversionFactor::where('emission_source_id', $refrigerantSource->id)
+                            ->where('machinery_category_id', $machinery->id)
+                            ->where('effective_date', '<=', "{$year}-{$month}-01")
+                            ->orderBy('effective_date', 'desc')
+                            ->value('multiplier');
+
+                        if ($dbFactor !== null) {
+                            $multiplier = (float) $dbFactor;
+                        } else {
+                            // Hardcode fallback based on Excel specs
+                            $freonType = strtoupper(trim($machinery->name));
+                            if ($freonType === 'R407C') {
+                                $multiplier = 1.774;
+                            } elseif ($freonType === 'R410A') {
+                                $multiplier = 2.088;
+                            }
+                        }
+                    }
                     $co2e = round($weight * $multiplier, 2);
 
                     \App\Models\MonthlyEmission::create([
@@ -261,6 +278,24 @@ class DataEntryController extends Controller
         foreach ($campusDataInput as $campusName => $cData) {
             $mainMeter = isset($cData['main_meter_kwh']) && $cData['main_meter_kwh'] !== '' ? (float) str_replace(',', '', $cData['main_meter_kwh']) : null;
             $quota = isset($cData['get_kwh']) && $cData['get_kwh'] !== '' ? (float) str_replace(',', '', $cData['get_kwh']) : 0;
+            
+            \App\Models\CampusMonthlyData::updateOrCreate([
+                'campus' => $campusName,
+                'period_month' => $month,
+                'period_year' => $year,
+            ], [
+                'main_meter_kwh' => $mainMeter,
+                'quota_kwh' => $quota
+            ]);
+        }
+        
+        // Support for single campus update from unified form
+        if ($request->has('campus') && $request->has('quota_kwh')) {
+            $campusName = $request->input('campus');
+            $mainMeter = $request->input('main_meter_kwh');
+            $mainMeter = $mainMeter !== null && $mainMeter !== '' ? (float) str_replace(',', '', $mainMeter) : null;
+            $quota = $request->input('quota_kwh');
+            $quota = $quota !== null && $quota !== '' ? (float) str_replace(',', '', $quota) : 0;
             
             \App\Models\CampusMonthlyData::updateOrCreate([
                 'campus' => $campusName,

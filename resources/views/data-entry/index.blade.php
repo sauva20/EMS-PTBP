@@ -51,136 +51,76 @@
             </div>
         @endif
 
-        <!-- GET Quota Form -->
-        <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-200 transition-all hover:shadow-md">
-            <div class="p-5 bg-[#009B77]/10 border-b border-[#009B77]/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 rounded-t-2xl">
-                <div>
-                    <h3 class="text-lg font-bold text-[#009B77] flex items-center gap-2">
-                        <svg class="w-5 h-5 text-[#009B77]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 10V3L4 14h7v7l9-11h-7z"></path></svg>
-                        Campus Monthly Electricity Setup
-                    </h3>
-                    <p class="text-sm text-[#009B77]/70 mt-1 ml-7">Configure the main electricity meter and GET quota for the selected campus.</p>
-                </div>
+        <!-- Master Form Wrapping Both Panels -->
+        <form action="{{ route('data-entry.store') }}" method="POST" id="matrixForm">
+            @csrf
+
+        <!-- Compact Configuration Panel -->
+        <div class="bg-white shadow-sm sm:rounded-xl border border-slate-200 mb-6 overflow-hidden">
+            <div class="px-4 py-3 bg-[#009B77] flex justify-between items-center">
+                <h3 class="text-sm font-bold text-white flex items-center gap-2">
+                    <svg class="w-4 h-4 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    Configuration & Emission Factors
+                </h3>
             </div>
-            <div class="p-6">
-                <form action="{{ route('data-entry.quota') }}" method="POST">
-                    @csrf
-                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-6">
-                        <div class="col-span-1 lg:col-span-2 grid grid-cols-2 gap-4">
-                            <div>
-                                <x-input-label for="q_month" :value="__('Month')" class="text-gray-600 font-medium" />
-                                <div class="mt-1">
-                                    <x-custom-select name="period_month" id="q_month" :options="$months" :selected="(int)date('n')" :required="true" />
-                                </div>
+            
+            <div class="p-4 grid grid-cols-1 lg:grid-cols-12 gap-6">
+                <!-- Left: Campus Setup -->
+                <div class="lg:col-span-7 border-r border-slate-100 pr-0 lg:pr-6">
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Campus Monthly Setup</h4>
+                        <div class="flex flex-wrap items-end gap-3">
+                            <div class="w-[120px]">
+                                <label class="block text-[11px] text-gray-500 font-medium mb-1">Month</label>
+                                <x-custom-select name="period_month" id="period_month" :options="$months" :selected="$selectedMonth" :required="true" buttonClass="border-gray-300 py-1.5 text-sm h-8" onchange="reloadPage()" />
                             </div>
-                            <div>
-                                <x-input-label for="q_year" :value="__('Year')" class="text-gray-600 font-medium" />
-                                <div class="mt-1">
-                                    @php $yearOpts = array_combine($years, $years); @endphp
-                                    <x-custom-select name="period_year" id="q_year" :options="$yearOpts" :selected="(int)date('Y')" :required="true" />
-                                </div>
+                            <div class="w-24">
+                                <label class="block text-[11px] text-gray-500 font-medium mb-1">Year</label>
+                                @php $yearOpts = array_combine($years, $years); @endphp
+                                <x-custom-select name="period_year" id="period_year" :options="$yearOpts" :selected="$selectedYear" :required="true" buttonClass="border-gray-300 py-1.5 text-sm h-8" onchange="reloadPage()" />
+                            </div>
+                            <div class="w-[120px]">
+                                <label class="block text-[11px] text-gray-500 font-medium mb-1">Campus</label>
+                                @php $campusOpts = ['Campus 1' => 'Campus 1', 'Campus 2' => 'Campus 2']; @endphp
+                                <x-custom-select name="campus" id="campus" :options="$campusOpts" selected="Campus 1" :required="true" buttonClass="border-gray-300 py-1.5 text-sm h-8" />
+                            </div>
+                            <div class="flex-1 min-w-[120px]">
+                                <label class="block text-[11px] text-gray-500 font-medium mb-1">Main Meter (kWh)</label>
+                                <input id="main_meter_kwh" class="block w-full h-8 py-1.5 px-2 text-sm border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77]" type="text" inputmode="decimal" placeholder="0" oninput="let v = this.value.replace(/[^0-9.]/g, ''); let p = v.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); this.value = p.join('.'); updateHiddenCampusData();" />
+                            </div>
+                            <div class="flex-1 min-w-[120px]">
+                                <label class="block text-[11px] text-gray-500 font-medium mb-1">GET Quota (kWh)</label>
+                                <input id="quota_kwh" class="block w-full h-8 py-1.5 px-2 text-sm border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77]" type="text" inputmode="decimal" required placeholder="0" oninput="let v = this.value.replace(/[^0-9.]/g, ''); let p = v.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); this.value = p.join('.'); updateHiddenCampusData();" />
                             </div>
                         </div>
                         
-                        <div>
-                            <x-input-label for="campus" :value="__('Campus')" class="text-gray-600 font-medium" />
-                            <div class="mt-1">
-                                @php $campusOpts = ['Campus 1' => 'Campus 1', 'Campus 2' => 'Campus 2']; @endphp
-                                <x-custom-select name="campus" id="campus" :options="$campusOpts" selected="Campus 1" :required="true" />
-                            </div>
+                        <!-- Hidden inputs to store data for all campuses -->
+                        <div id="hidden_campus_data_container">
+                            @foreach(['Campus 1', 'Campus 2'] as $cName)
+                                <input type="hidden" name="campus_data[{{ $cName }}][main_meter_kwh]" id="hidden_main_meter_{{ Str::slug($cName) }}" value="{{ $campusData[$cName]['main_meter_kwh'] ?? '' }}">
+                                <input type="hidden" name="campus_data[{{ $cName }}][get_kwh]" id="hidden_quota_{{ Str::slug($cName) }}" value="{{ $campusData[$cName]['quota_kwh'] ?? '' }}">
+                            @endforeach
                         </div>
-                        <div>
-                            <x-input-label for="main_meter_kwh" :value="__('Main Meter (kWh)')" class="text-gray-600 font-medium" />
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <x-text-input id="main_meter_kwh" class="block w-full pr-12 transition-colors border-gray-400 focus:border-[#009B77] focus:ring-[#009B77]" type="text" inputmode="decimal" name="main_meter_kwh" placeholder="0" oninput="let v = this.value.replace(/[^0-9.]/g, ''); let p = v.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); this.value = p.join('.');" />
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">kWh</span>
-                                </div>
-                            </div>
-                        </div>
-                        <div>
-                            <x-input-label for="quota_kwh" :value="__('GET Quota (kWh)')" class="text-gray-600 font-medium" />
-                            <div class="mt-1 relative rounded-md shadow-sm">
-                                <x-text-input id="quota_kwh" class="block w-full pr-12 transition-colors border-gray-400 focus:border-[#009B77] focus:ring-[#009B77]" type="text" inputmode="decimal" name="quota_kwh" required placeholder="0" oninput="let v = this.value.replace(/[^0-9.]/g, ''); let p = v.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); this.value = p.join('.');" />
-                                <div class="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                                    <span class="text-gray-500 sm:text-sm">kWh</span>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    <div class="mt-6 flex justify-end">
-                        <button type="submit" class="inline-flex items-center px-4 py-2 bg-[#009B77] border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#008264] focus:bg-[#008264] active:bg-[#006e54] focus:outline-none focus:ring-2 focus:ring-[#009B77] focus:ring-offset-2 transition ease-in-out duration-150 shadow-sm">
-                            <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                            Save Campus Data
-                        </button>
-                    </div>
-                </form>
-            </div>
-        </div>
+                </div>
 
-        <!-- Global Electricity Emission Factors -->
-        <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-200 transition-all hover:shadow-md mb-6">
-            <div class="p-5 bg-blue-500/10 border-b border-blue-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 rounded-t-2xl">
-                <div>
-                    <h3 class="text-lg font-bold text-blue-700 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                        CO2 Emission Global (Electricity)
-                    </h3>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div>
-                        <x-input-label for="inp_coal_factor" :value="__('Coal')" class="text-gray-600 font-medium" />
-                        <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_coal_factor" class="block w-full pr-28 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $coalFactor }}" />
-                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
-                            </div>
+                <!-- Right: Emission Factors -->
+                <div class="lg:col-span-5">
+                    <h4 class="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-3">Global Emission Factors</h4>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                        <div>
+                            <label class="block text-[11px] text-gray-500 font-medium mb-1">Coal (tCO2e)</label>
+                            <input id="inp_coal_factor" class="block w-full h-8 py-1.5 px-2 text-sm border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $coalFactor }}" />
                         </div>
-                    </div>
-                    <div>
-                        <x-input-label for="inp_renewable_factor" :value="__('Renewable')" class="text-gray-600 font-medium" />
-                        <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_renewable_factor" class="block w-full pr-28 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $renewableFactor }}" />
-                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
-                            </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-500 font-medium mb-1" title="Source: REC for TNB GET">Renewable</label>
+                            <input id="inp_renewable_factor" class="block w-full h-8 py-1.5 px-2 text-sm border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $renewableFactor }}" />
                         </div>
-                        <p class="text-xs text-gray-500 mt-1">Source: REC for TNB GET</p>
-                    </div>
-                    <div>
-                        <x-input-label for="inp_pv_factor" :value="__('Self-generated PV')" class="text-gray-600 font-medium" />
-                        <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_pv_factor" class="block w-full pr-28 transition-colors border-gray-400 focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $pvFactor }}" />
-                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm">tCO2e/kWh</span>
-                            </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-500 font-medium mb-1">PV (tCO2e)</label>
+                            <input id="inp_pv_factor" class="block w-full h-8 py-1.5 px-2 text-sm border-gray-300 rounded focus:border-blue-500 focus:ring-blue-500" type="number" step="any" inputmode="decimal" value="{{ $pvFactor }}" />
                         </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Global Diesel Emission Factors -->
-        <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-200 transition-all hover:shadow-md mb-6">
-            <div class="p-5 bg-orange-500/10 border-b border-orange-500/20 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 rounded-t-2xl">
-                <div>
-                    <h3 class="text-lg font-bold text-orange-700 flex items-center gap-2">
-                        <svg class="w-5 h-5 text-orange-600" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
-                        CO2 Thermal energy self-generated oil
-                    </h3>
-                </div>
-            </div>
-            <div class="p-6">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    <div>
-                        <x-input-label for="inp_boiler_factor" :value="__('kgCO2e/liter')" class="text-gray-600 font-medium" />
-                        <div class="mt-1 relative rounded-md shadow-sm">
-                            <x-text-input id="inp_boiler_factor" class="block w-full pr-24 transition-colors border-gray-400 focus:border-orange-500 focus:ring-orange-500" type="number" step="any" inputmode="decimal" value="{{ number_format($boilerFactor * 1000, 2, '.', '') }}" />
-                            <div class="absolute inset-y-0 right-0 pr-8 flex items-center pointer-events-none">
-                                <span class="text-gray-500 sm:text-sm">kgCO2e</span>
-                            </div>
+                        <div>
+                            <label class="block text-[11px] text-gray-500 font-medium mb-1">Boiler (kgCO2e/L)</label>
+                            <input id="inp_boiler_factor" class="block w-full h-8 py-1.5 px-2 text-sm border-gray-300 rounded focus:border-orange-500 focus:ring-orange-500" type="number" step="any" inputmode="decimal" value="{{ number_format($boilerFactor * 1000, 2, '.', '') }}" />
                         </div>
                     </div>
                 </div>
@@ -189,41 +129,29 @@
 
         <!-- Matrix Data Entry Form -->
         <div class="bg-white shadow-sm sm:rounded-2xl border border-slate-200 transition-all hover:shadow-md">
-            <form action="{{ route('data-entry.store') }}" method="POST" id="matrixForm">
-                @csrf
+
                 
-                <div class="p-5 bg-[#009B77]/10 border-b border-[#009B77]/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl">
+                <div class="p-5 bg-[#009B77] flex flex-col md:flex-row justify-between items-start md:items-center gap-4 rounded-t-2xl">
                     <div>
-                        <h3 class="text-lg font-bold text-[#009B77] flex items-center gap-2">
-                            <svg class="w-5 h-5 text-[#009B77]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
+                        <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                            <svg class="w-5 h-5 text-emerald-100" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17v-2m3 2v-4m3 4v-6m2 10H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path></svg>
                             Emissions Data Matrix
                         </h3>
-                        <p class="text-sm text-[#009B77]/70 mt-1 ml-7">Enter usage data for each building. CO₂ emissions are calculated automatically.</p>
+                        <p class="text-sm text-emerald-100/90 mt-1 ml-7">Enter usage data for each building. CO₂ emissions are calculated automatically.</p>
                     </div>
-                    
-                    <div class="flex items-center gap-2 bg-white px-3 py-1.5 rounded-lg border border-gray-200 shadow-sm">
-                        <span class="text-xs font-semibold text-gray-500 uppercase tracking-wider ml-1">Period</span>
-                        <div class="flex items-center gap-1.5">
-                            <div class="w-32">
-                                <x-custom-select name="month" id="period_month" :options="$months" :selected="$selectedMonth" onchange="reloadPage()" buttonClass="border border-gray-200 bg-gray-50 py-1 pl-3 pr-8 font-semibold text-gray-700 hover:bg-gray-50 focus:border-[#009B77] focus:ring-1 focus:ring-[#009B77] rounded-md shadow-sm" />
-                            </div>
-                            <div class="w-24">
-                                @php $yearOpts = array_combine($years, $years); @endphp
-                                <x-custom-select name="year" id="period_year" :options="$yearOpts" :selected="$selectedYear" onchange="reloadPage()" buttonClass="border border-gray-200 bg-gray-50 py-1 pl-3 pr-8 font-semibold text-gray-700 hover:bg-gray-50 focus:border-[#009B77] focus:ring-1 focus:ring-[#009B77] rounded-md shadow-sm" />
-                            </div>
-                        </div>
-                    </div>
+                    <input type="hidden" name="month" value="{{ $selectedMonth }}">
+                    <input type="hidden" name="year" value="{{ $selectedYear }}">
                 </div>
 
                 <div class="overflow-x-auto w-full">
                     <table class="w-full text-sm text-left whitespace-nowrap">
-                        <thead class="bg-[#009B77] text-white">
+                        <thead class="bg-[#009B77]/10 text-[#009B77]">
                             <tr>
-                                <th class="sticky left-0 z-10 bg-[#009B77] px-4 py-3 border-b border-r border-[#008264] text-xs font-bold uppercase tracking-wider shadow-[1px_0_0_0_#008264]">Emission Source</th>
+                                <th class="sticky left-0 z-10 bg-[#e6f5f1] px-4 py-3 border-b border-r border-[#009B77]/20 text-xs font-bold uppercase tracking-wider shadow-[1px_0_0_0_rgba(0,155,119,0.2)]">Emission Source</th>
                                 @foreach($buildings as $building)
-                                    <th class="px-3 py-3 border-b border-r border-[#008264] text-center text-xs font-bold uppercase tracking-wider">{{ $building->name }}</th>
+                                    <th class="px-3 py-3 border-b border-r border-[#009B77]/20 text-center text-xs font-bold uppercase tracking-wider">{{ $building->name }}</th>
                                 @endforeach
-                                <th class="px-4 py-3 border-b border-l border-[#008264] text-right pr-6 text-xs font-bold uppercase tracking-wider">Total</th>
+                                <th class="px-4 py-3 border-b border-l border-[#009B77]/20 text-right pr-6 text-xs font-bold uppercase tracking-wider">Total</th>
                             </tr>
                         </thead>
                         <tbody class="bg-white" id="matrix-tbody">
@@ -686,7 +614,7 @@
                     <span class="text-sm text-gray-500 italic hidden sm:inline-block">Unsaved changes will be lost</span>
                     <button type="submit" class="inline-flex items-center px-6 py-2.5 bg-[#009B77] border border-transparent rounded-lg font-semibold text-xs text-white uppercase tracking-widest hover:bg-[#008264] focus:bg-[#008264] active:bg-[#006e54] focus:outline-none focus:ring-2 focus:ring-[#009B77] focus:ring-offset-2 transition ease-in-out duration-150 shadow-md hover:shadow-lg">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"></path></svg>
-                        Save Matrix Data
+                        Save All Data
                     </button>
                 </div>
             </form>
@@ -715,18 +643,25 @@
                 const mainMeterInput = document.getElementById('main_meter_kwh');
                 const quotaInput = document.getElementById('quota_kwh');
 
+                // Update hidden inputs when user types
+                window.updateHiddenCampusData = function() {
+                    if (!campusSelect) return;
+                    const selected = campusSelect.value.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    const hiddenMain = document.getElementById('hidden_main_meter_' + selected);
+                    const hiddenQuota = document.getElementById('hidden_quota_' + selected);
+                    
+                    if (hiddenMain && mainMeterInput) hiddenMain.value = mainMeterInput.value.replace(/,/g, '');
+                    if (hiddenQuota && quotaInput) hiddenQuota.value = quotaInput.value.replace(/,/g, '');
+                };
+
                 function updateCampusFields() {
                     if (!campusSelect) return;
-                    const selected = campusSelect.value;
-                    if (campusData && campusData[selected]) {
-                        mainMeterInput.value = campusData[selected].main_meter_kwh !== null ? campusData[selected].main_meter_kwh : '';
-                        quotaInput.value = campusData[selected].quota_kwh !== null ? campusData[selected].quota_kwh : '';
-                    } else {
-                        mainMeterInput.value = '';
-                        quotaInput.value = '';
-                    }
-                    if (mainMeterInput && mainMeterInput.value) mainMeterInput.value = formatNumber(mainMeterInput.value);
-                    if (quotaInput && quotaInput.value) quotaInput.value = formatNumber(quotaInput.value);
+                    const selected = campusSelect.value.toLowerCase().replace(/[^a-z0-9]/g, '-');
+                    const hiddenMain = document.getElementById('hidden_main_meter_' + selected);
+                    const hiddenQuota = document.getElementById('hidden_quota_' + selected);
+                    
+                    mainMeterInput.value = (hiddenMain && hiddenMain.value) ? formatNumber(hiddenMain.value) : '';
+                    quotaInput.value = (hiddenQuota && hiddenQuota.value) ? formatNumber(hiddenQuota.value) : '';
                 }
 
                 if (campusSelect) {
