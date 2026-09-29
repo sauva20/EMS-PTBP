@@ -23,8 +23,8 @@ class MachineryCategoryExcelSeeder extends Seeder
 
         $refrigerant = EmissionSource::where('name', 'IPPU/Refrigerant')->first();
         if ($refrigerant) {
-            MachineryCategory::updateOrCreate(['name' => 'R22', 'emission_source_id' => $refrigerant->id]);
             MachineryCategory::updateOrCreate(['name' => 'R407C', 'emission_source_id' => $refrigerant->id]);
+            MachineryCategory::updateOrCreate(['name' => 'R410A', 'emission_source_id' => $refrigerant->id]);
         }
     }
 }

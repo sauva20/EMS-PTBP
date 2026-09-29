@@ -98,7 +98,7 @@ class DataEntryController extends Controller
                 $boilerFactor = (float) $dbBoilerFactor;
             }
         }
-        
+
         $pvSource = \App\Models\EmissionSource::where('name', 'Self-generated PV Electricity')->first();
         $pvFactor = 0.0000735;
         if ($pvSource) {
@@ -122,6 +122,59 @@ class DataEntryController extends Controller
         $month = $validated['month'];
         $year = $validated['year'];
         $emissionsInput = $validated['emissions'] ?? [];
+
+        // Save Global Emission Factors if provided
+        $factorsInput = $request->input('factors', []);
+        if (!empty($factorsInput)) {
+            $effectiveDate = "{$year}-{$month}-01";
+
+            // Coal (Purchased Electricity)
+            if (isset($factorsInput['coal']) && $factorsInput['coal'] !== '') {
+                $coalSource = \App\Models\EmissionSource::where('name', 'Purchased Electricity')->first();
+                if ($coalSource) {
+                    \App\Models\ConversionFactor::updateOrCreate(
+                        ['emission_source_id' => $coalSource->id, 'machinery_category_id' => null, 'effective_date' => $effectiveDate],
+                        ['multiplier' => (float) $factorsInput['coal']]
+                    );
+                }
+            }
+
+            // Renewable (Purchased Electricity GET)
+            if (isset($factorsInput['renewable']) && $factorsInput['renewable'] !== '') {
+                $renSource = \App\Models\EmissionSource::where('name', 'Purchased Electricity (GET)')->first();
+                if ($renSource) {
+                    \App\Models\ConversionFactor::updateOrCreate(
+                        ['emission_source_id' => $renSource->id, 'machinery_category_id' => null, 'effective_date' => $effectiveDate],
+                        ['multiplier' => (float) $factorsInput['renewable']]
+                    );
+                }
+            }
+
+            // PV (Self-generated PV Electricity)
+            if (isset($factorsInput['pv']) && $factorsInput['pv'] !== '') {
+                $pvSource = \App\Models\EmissionSource::where('name', 'Self-generated PV Electricity')->first();
+                if ($pvSource) {
+                    \App\Models\ConversionFactor::updateOrCreate(
+                        ['emission_source_id' => $pvSource->id, 'machinery_category_id' => null, 'effective_date' => $effectiveDate],
+                        ['multiplier' => (float) $factorsInput['pv']]
+                    );
+                }
+            }
+
+            // Boiler (Stationary Energy Diesel)
+            if (isset($factorsInput['boiler']) && $factorsInput['boiler'] !== '') {
+                $dieselSource = \App\Models\EmissionSource::where('name', 'Stationary Energy (Diesel)')->first();
+                $boilerCat = $dieselSource ? \App\Models\MachineryCategory::where('emission_source_id', $dieselSource->id)->where('name', 'Boiler')->first() : null;
+                if ($dieselSource && $boilerCat) {
+                    \App\Models\ConversionFactor::updateOrCreate(
+                        ['emission_source_id' => $dieselSource->id, 'machinery_category_id' => $boilerCat->id, 'effective_date' => $effectiveDate],
+                        // Divide by 1000 since UI accepts kgCO2e/L but db might want tCO2e/L?
+                        // Wait, in UI I did: value="{{ number_format($boilerFactor * 1000, 2) }}". So to save, divide by 1000!
+                        ['multiplier' => (float) $factorsInput['boiler'] / 1000]
+                    );
+                }
+            }
+        }
 
         foreach ($emissionsInput as $building_id => $sourceData) {
             foreach ($sourceData as $source_id => $catData) {
@@ -163,6 +216,8 @@ class DataEntryController extends Controller
                                 }
                             } elseif ($source->name === 'Stationary Energy (LPG)') {
                                 $multiplier = 0.0014;
+                            } elseif ($source->name === 'IPPU/Refrigerant') {
+                                $multiplier = 2.773;
                             } elseif ($source->name === 'Self-generated PV Electricity') {
                                 $dbPvFactor = \App\Models\ConversionFactor::where('emission_source_id', $source_id)->orderBy('effective_date', 'desc')->value('multiplier');
                                 $multiplier = $dbPvFactor !== null ? (float) $dbPvFactor : 0.0000735;
@@ -201,8 +256,11 @@ class DataEntryController extends Controller
                             ->first();
 
                         $multiplier = $factor ? $factor->multiplier : 0;
-                        if ($source->name === 'Stationary Energy (LPG)')
+                        if ($source->name === 'Stationary Energy (LPG)') {
                             $multiplier = 0.0014;
+                        } elseif ($source->name === 'IPPU/Refrigerant') {
+                            $multiplier = 2.773;
+                        }
                         $co2e = round($raw_usage * $multiplier, 2);
                     }
 
@@ -236,7 +294,17 @@ class DataEntryController extends Controller
                 if ($weight !== null && $weight !== '' && $type) {
                     $weight = (float) str_replace(',', '', $weight);
 
-                    $machinery = \App\Models\MachineryCategory::find($type);
+                    $typeString = strtoupper(trim($type));
+                    $machinery = \App\Models\MachineryCategory::where('emission_source_id', $refrigerantSource->id)
+                        ->where('name', $typeString)->first();
+
+                    if (!$machinery && $typeString !== '') {
+                        $machinery = \App\Models\MachineryCategory::create([
+                            'name' => $typeString,
+                            'emission_source_id' => $refrigerantSource->id
+                        ]);
+                    }
+
                     $multiplier = 2.1; // Default fallback
 
                     if ($machinery) {
@@ -276,19 +344,19 @@ class DataEntryController extends Controller
         // Process CampusMonthlyData (Electricity GET and Main Meter)
         $campusDataInput = $request->input('campus_data', []);
         foreach ($campusDataInput as $campusName => $cData) {
-            $mainMeter = isset($cData['main_meter_kwh']) && $cData['main_meter_kwh'] !== '' ? (float) str_replace(',', '', $cData['main_meter_kwh']) : null;
+            $mainMeter = isset($cData['total_purchased_kwh']) && $cData['total_purchased_kwh'] !== '' ? (float) str_replace(',', '', $cData['total_purchased_kwh']) : null;
             $quota = isset($cData['get_kwh']) && $cData['get_kwh'] !== '' ? (float) str_replace(',', '', $cData['get_kwh']) : 0;
-            
+
             \App\Models\CampusMonthlyData::updateOrCreate([
                 'campus' => $campusName,
                 'period_month' => $month,
                 'period_year' => $year,
             ], [
-                'main_meter_kwh' => $mainMeter,
+                'total_purchased_kwh' => $mainMeter,
                 'quota_kwh' => $quota
             ]);
         }
-        
+
         // Support for single campus update from unified form
         if ($request->has('campus') && $request->has('quota_kwh')) {
             $campusName = $request->input('campus');
@@ -296,7 +364,7 @@ class DataEntryController extends Controller
             $mainMeter = $mainMeter !== null && $mainMeter !== '' ? (float) str_replace(',', '', $mainMeter) : null;
             $quota = $request->input('quota_kwh');
             $quota = $quota !== null && $quota !== '' ? (float) str_replace(',', '', $quota) : 0;
-            
+
             \App\Models\CampusMonthlyData::updateOrCreate([
                 'campus' => $campusName,
                 'period_month' => $month,
@@ -347,7 +415,7 @@ class DataEntryController extends Controller
                 'multiplier' => $request->renewable_factor
             ]);
         }
-        
+
         if ($pvSource) {
             \App\Models\ConversionFactor::updateOrCreate([
                 'emission_source_id' => $pvSource->id,
@@ -395,7 +463,7 @@ class DataEntryController extends Controller
                 ->where('period_month', $request->month)
                 ->where('period_year', $request->year)
                 ->get();
-                
+
             foreach ($emissions as $emission) {
                 $emission->calculated_co2e = round($emission->raw_usage * $request->boiler_factor, 2);
                 $emission->save();
@@ -418,10 +486,10 @@ class DataEntryController extends Controller
         $month = $validated['period_month'];
         $year = $validated['period_year'];
         $campusName = $validated['campus'];
-        
+
         $mainMeter = isset($validated['main_meter_kwh']) && $validated['main_meter_kwh'] !== '' ? (float) str_replace(',', '', $validated['main_meter_kwh']) : null;
         $quota = isset($validated['quota_kwh']) && $validated['quota_kwh'] !== '' ? (float) str_replace(',', '', $validated['quota_kwh']) : 0;
-        
+
         \App\Models\CampusMonthlyData::updateOrCreate([
             'campus' => $campusName,
             'period_month' => $month,
