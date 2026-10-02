@@ -83,8 +83,10 @@ class DataEntryController extends Controller
         $coalSource = \App\Models\EmissionSource::where('name', 'Purchased Electricity')->first();
         $renewableSource = \App\Models\EmissionSource::where('name', 'Purchased Electricity (GET)')->first();
 
-        $coalFactor = $coalSource ? \App\Models\ConversionFactor::where('emission_source_id', $coalSource->id)->orderBy('effective_date', 'desc')->value('multiplier') : 0;
-        $renewableFactor = $renewableSource ? \App\Models\ConversionFactor::where('emission_source_id', $renewableSource->id)->orderBy('effective_date', 'desc')->value('multiplier') : 0;
+        $effectiveDateFilter = "{$selectedYear}-" . str_pad($selectedMonth, 2, '0', STR_PAD_LEFT) . "-01";
+
+        $coalFactor = $coalSource ? \App\Models\ConversionFactor::where('emission_source_id', $coalSource->id)->where('effective_date', '<=', $effectiveDateFilter)->orderBy('effective_date', 'desc')->value('multiplier') : 0;
+        $renewableFactor = $renewableSource ? \App\Models\ConversionFactor::where('emission_source_id', $renewableSource->id)->where('effective_date', '<=', $effectiveDateFilter)->orderBy('effective_date', 'desc')->value('multiplier') : 0;
 
         $dieselSource = \App\Models\EmissionSource::where('name', 'Stationary Energy (Diesel)')->first();
         $boilerCat = $dieselSource ? \App\Models\MachineryCategory::where('emission_source_id', $dieselSource->id)->where('name', 'Boiler')->first() : null;
@@ -92,6 +94,7 @@ class DataEntryController extends Controller
         if ($dieselSource && $boilerCat) {
             $dbBoilerFactor = \App\Models\ConversionFactor::where('emission_source_id', $dieselSource->id)
                 ->where('machinery_category_id', $boilerCat->id)
+                ->where('effective_date', '<=', $effectiveDateFilter)
                 ->orderBy('effective_date', 'desc')
                 ->value('multiplier');
             if ($dbBoilerFactor !== null) {
@@ -102,13 +105,15 @@ class DataEntryController extends Controller
         $pvSource = \App\Models\EmissionSource::where('name', 'Self-generated PV Electricity')->first();
         $pvFactor = 0.0000735;
         if ($pvSource) {
-            $dbPvFactor = \App\Models\ConversionFactor::where('emission_source_id', $pvSource->id)->orderBy('effective_date', 'desc')->value('multiplier');
+            $dbPvFactor = \App\Models\ConversionFactor::where('emission_source_id', $pvSource->id)->where('effective_date', '<=', $effectiveDateFilter)->orderBy('effective_date', 'desc')->value('multiplier');
             if ($dbPvFactor !== null) {
                 $pvFactor = (float) $dbPvFactor;
             }
         }
+        
+        $pvFactorStr = preg_replace('/(E[-+])(\d)$/', '${1}0$2', (string)$pvFactor);
 
-        return view('data-entry.index', compact('buildings', 'sources', 'machineryCategories', 'factors', 'months', 'years', 'selectedMonth', 'selectedYear', 'existingEmissions', 'existingCo2', 'campusData', 'coalFactor', 'renewableFactor', 'boilerFactor', 'pvFactor'));
+        return view('data-entry.index', compact('buildings', 'sources', 'machineryCategories', 'factors', 'months', 'years', 'selectedMonth', 'selectedYear', 'existingEmissions', 'existingCo2', 'campusData', 'coalFactor', 'renewableFactor', 'boilerFactor', 'pvFactor', 'pvFactorStr'));
     }
 
     public function store(Request $request)
@@ -125,6 +130,7 @@ class DataEntryController extends Controller
 
         // Save Global Emission Factors if provided
         $factorsInput = $request->input('factors', []);
+        \Illuminate\Support\Facades\Log::info('DataEntryController store factors:', $factorsInput);
         if (!empty($factorsInput)) {
             $effectiveDate = "{$year}-{$month}-01";
 
@@ -134,7 +140,7 @@ class DataEntryController extends Controller
                 if ($coalSource) {
                     \App\Models\ConversionFactor::updateOrCreate(
                         ['emission_source_id' => $coalSource->id, 'machinery_category_id' => null, 'effective_date' => $effectiveDate],
-                        ['multiplier' => (float) $factorsInput['coal']]
+                        ['multiplier' => (float) str_replace(',', '.', $factorsInput['coal'])]
                     );
                 }
             }
@@ -145,7 +151,7 @@ class DataEntryController extends Controller
                 if ($renSource) {
                     \App\Models\ConversionFactor::updateOrCreate(
                         ['emission_source_id' => $renSource->id, 'machinery_category_id' => null, 'effective_date' => $effectiveDate],
-                        ['multiplier' => (float) $factorsInput['renewable']]
+                        ['multiplier' => (float) str_replace(',', '.', $factorsInput['renewable'])]
                     );
                 }
             }
@@ -156,7 +162,7 @@ class DataEntryController extends Controller
                 if ($pvSource) {
                     \App\Models\ConversionFactor::updateOrCreate(
                         ['emission_source_id' => $pvSource->id, 'machinery_category_id' => null, 'effective_date' => $effectiveDate],
-                        ['multiplier' => (float) $factorsInput['pv']]
+                        ['multiplier' => (float) str_replace(',', '.', $factorsInput['pv'])]
                     );
                 }
             }
@@ -168,11 +174,19 @@ class DataEntryController extends Controller
                 if ($dieselSource && $boilerCat) {
                     \App\Models\ConversionFactor::updateOrCreate(
                         ['emission_source_id' => $dieselSource->id, 'machinery_category_id' => $boilerCat->id, 'effective_date' => $effectiveDate],
-                        // Divide by 1000 since UI accepts kgCO2e/L but db might want tCO2e/L?
-                        // Wait, in UI I did: value="{{ number_format($boilerFactor * 1000, 2) }}". So to save, divide by 1000!
-                        ['multiplier' => (float) $factorsInput['boiler'] / 1000]
+                        ['multiplier' => ((float) str_replace(',', '.', $factorsInput['boiler'])) / 1000]
                     );
                 }
+            }
+
+            // Thermal energy custom factors (saved to cache since they are derived / standalone constants)
+            if (isset($factorsInput['thermal_kwh']) && $factorsInput['thermal_kwh'] !== '') {
+                $val = str_replace(',', '.', $factorsInput['thermal_kwh']);
+                \Illuminate\Support\Facades\Cache::forever('factor_thermal_kwh', (float) $val);
+            }
+            if (isset($factorsInput['thermal_m3']) && $factorsInput['thermal_m3'] !== '') {
+                $val = str_replace(',', '.', $factorsInput['thermal_m3']);
+                \Illuminate\Support\Facades\Cache::forever('factor_thermal_m3', (float) $val);
             }
         }
 
@@ -344,7 +358,7 @@ class DataEntryController extends Controller
         // Process CampusMonthlyData (Electricity GET and Main Meter)
         $campusDataInput = $request->input('campus_data', []);
         foreach ($campusDataInput as $campusName => $cData) {
-            $mainMeter = isset($cData['total_purchased_kwh']) && $cData['total_purchased_kwh'] !== '' ? (float) str_replace(',', '', $cData['total_purchased_kwh']) : null;
+            $mainMeter = isset($cData['total_purchased_kwh']) && $cData['total_purchased_kwh'] !== '' ? (float) str_replace(',', '', $cData['total_purchased_kwh']) : 0;
             $quota = isset($cData['get_kwh']) && $cData['get_kwh'] !== '' ? (float) str_replace(',', '', $cData['get_kwh']) : 0;
 
             \App\Models\CampusMonthlyData::updateOrCreate([
@@ -361,7 +375,7 @@ class DataEntryController extends Controller
         if ($request->has('campus') && $request->has('quota_kwh')) {
             $campusName = $request->input('campus');
             $mainMeter = $request->input('main_meter_kwh');
-            $mainMeter = $mainMeter !== null && $mainMeter !== '' ? (float) str_replace(',', '', $mainMeter) : null;
+            $mainMeter = $mainMeter !== null && $mainMeter !== '' ? (float) str_replace(',', '', $mainMeter) : 0;
             $quota = $request->input('quota_kwh');
             $quota = $quota !== null && $quota !== '' ? (float) str_replace(',', '', $quota) : 0;
 
@@ -386,6 +400,13 @@ class DataEntryController extends Controller
 
     public function updateElectricityFactors(Request $request)
     {
+        // Bulletproof: handle commas BEFORE validation in case of old cached JS
+        $request->merge([
+            'coal_factor' => str_replace(',', '.', $request->coal_factor),
+            'renewable_factor' => str_replace(',', '.', $request->renewable_factor),
+            'pv_factor' => str_replace(',', '.', $request->pv_factor),
+        ]);
+
         $request->validate([
             'coal_factor' => 'required|numeric|min:0',
             'renewable_factor' => 'required|numeric|min:0',
@@ -398,30 +419,35 @@ class DataEntryController extends Controller
         $renewableSource = \App\Models\EmissionSource::where('name', 'Purchased Electricity (GET)')->first();
         $pvSource = \App\Models\EmissionSource::where('name', 'Self-generated PV Electricity')->first();
 
+        $effectiveDate = "{$request->year}-" . str_pad($request->month, 2, '0', STR_PAD_LEFT) . "-01";
+
         if ($coalSource) {
             \App\Models\ConversionFactor::updateOrCreate([
                 'emission_source_id' => $coalSource->id,
-                'effective_date' => '2020-01-01',
+                'machinery_category_id' => null,
+                'effective_date' => $effectiveDate,
             ], [
-                'multiplier' => $request->coal_factor
+                'multiplier' => (float) $request->coal_factor
             ]);
         }
 
         if ($renewableSource) {
             \App\Models\ConversionFactor::updateOrCreate([
                 'emission_source_id' => $renewableSource->id,
-                'effective_date' => '2020-01-01',
+                'machinery_category_id' => null,
+                'effective_date' => $effectiveDate,
             ], [
-                'multiplier' => $request->renewable_factor
+                'multiplier' => (float) $request->renewable_factor
             ]);
         }
 
         if ($pvSource) {
             \App\Models\ConversionFactor::updateOrCreate([
                 'emission_source_id' => $pvSource->id,
-                'effective_date' => '2020-01-01',
+                'machinery_category_id' => null,
+                'effective_date' => $effectiveDate,
             ], [
-                'multiplier' => $request->pv_factor
+                'multiplier' => (float) $request->pv_factor
             ]);
         }
 
@@ -437,22 +463,38 @@ class DataEntryController extends Controller
 
     public function updateDieselFactors(Request $request)
     {
+        $request->merge([
+            'boiler_factor' => str_replace(',', '.', $request->boiler_factor),
+        ]);
+
         $request->validate([
             'month' => 'required|integer|between:1,12',
             'year' => 'required|integer|min:2020',
             'boiler_factor' => 'required|numeric|min:0',
         ]);
 
+        if ($request->has('thermal_kwh')) {
+            $val = str_replace(',', '.', $request->input('thermal_kwh'));
+            \Illuminate\Support\Facades\Cache::forever('factor_thermal_kwh', (float) $val);
+        }
+
+        if ($request->has('thermal_m3')) {
+            $val = str_replace(',', '.', $request->input('thermal_m3'));
+            \Illuminate\Support\Facades\Cache::forever('factor_thermal_m3', (float) $val);
+        }
+
         $dieselSource = \App\Models\EmissionSource::where('name', 'Stationary Energy (Diesel)')->first();
         $boilerCat = $dieselSource ? \App\Models\MachineryCategory::where('emission_source_id', $dieselSource->id)->where('name', 'Boiler')->first() : null;
+
+        $effectiveDate = "{$request->year}-" . str_pad($request->month, 2, '0', STR_PAD_LEFT) . "-01";
 
         if ($dieselSource && $boilerCat) {
             \App\Models\ConversionFactor::updateOrCreate([
                 'emission_source_id' => $dieselSource->id,
                 'machinery_category_id' => $boilerCat->id,
-                'effective_date' => '2020-01-01',
+                'effective_date' => $effectiveDate,
             ], [
-                'multiplier' => $request->boiler_factor
+                'multiplier' => (float) str_replace(',', '.', $request->boiler_factor)
             ]);
         }
 

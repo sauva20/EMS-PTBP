@@ -45,7 +45,7 @@
         @endif
 
         @if(session('success'))
-            <div class="bg-emerald-50 border-l-4 border-emerald-500 p-4 mb-6 rounded-r-md shadow-sm">
+            <div class="bg-emerald-50 border-l-4 border -emerald-500 p-4 mb-6 rounded-r-md shadow-sm">
                 <div class="flex">
                     <div class="flex-shrink-0">
                         <svg class="h-5 w-5 text-emerald-400" viewBox="0 0 20 20" fill="currentColor">
@@ -103,8 +103,8 @@
                                     <td class="py-1.5 pr-3 text-slate-600 font-medium">Coal:</td>
                                     <td class="py-1.5 w-32"><input name="factors[coal]" id="inp_coal_factor"
                                             class="w-full h-7 px-2 text-right border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77] text-sm"
-                                            type="number" step="any"
-                                            value="{{ rtrim(rtrim(number_format($coalFactor, 12, '.', ''), '0'), '.') }}" />
+                                            type="text" inputmode="decimal"
+                                            value="{{ old('factors.coal', str_replace('.', ',', rtrim(rtrim(number_format($coalFactor, 12, '.', ''), '0'), '.'))) }}" />
                                     </td>
                                     <td class="py-1.5 pl-2 text-slate-500 text-xs">tCO2e/kWh</td>
                                     <td></td>
@@ -113,16 +113,20 @@
                                     <td class="py-1.5 pr-3 text-slate-600 font-medium">Renewable:</td>
                                     <td class="py-1.5 w-32"><input name="factors[renewable]" id="inp_renewable_factor"
                                             class="w-full h-7 px-2 text-right border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77] text-sm"
-                                            type="number" step="any" value="{{ $renewableFactor }}" /></td>
+                                            type="text" inputmode="decimal" value="{{ old('factors.renewable', str_replace('.', ',', rtrim(rtrim(number_format($renewableFactor, 12, '.', ''), '0'), '.'))) }}" /></td>
                                     <td class="py-1.5 pl-2 text-slate-500 text-xs">tCO2e/kWh</td>
                                     <td class="py-1.5 pl-4 text-slate-400 text-xs italic">Source: REC for TNB GET</td>
                                 </tr>
                                 <tr>
-                                    <td class="py-1.5 pr-3 text-slate-600 font-medium">Self-generated PV:</td>
-                                    <td class="py-1.5 w-32"><input name="factors[pv]" id="inp_pv_factor"
+                                    <td class="py-1.5 pr-3 text-slate-600 font-medium align-top pt-2">Self-generated PV:</td>
+                                    <td class="py-1.5 w-32 relative">
+                                        <input name="factors[pv]" id="inp_pv_factor"
                                             class="w-full h-7 px-2 text-right border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77] text-sm"
-                                            type="number" step="any" value="{{ $pvFactor }}" /></td>
-                                    <td class="py-1.5 pl-2 text-slate-500 text-xs">tCO2e/kWh</td>
+                                            type="text" value="{{ old('factors.pv', $pvFactorStr) }}" 
+                                            oninput="let v = this.value.replace(',', '.'); if(!isNaN(v) && v !== '') { document.getElementById('pv_preview').innerText = Number(v).toLocaleString('id-ID', {maximumFractionDigits: 12}); } else { document.getElementById('pv_preview').innerText = ''; }" />
+                                        <div id="pv_preview" class="text-[11px] text-gray-500 text-right mt-0.5">{{ str_replace('.', ',', rtrim(rtrim(number_format($pvFactor, 12, '.', ''), '0'), '.')) }}</div>
+                                    </td>
+                                    <td class="py-1.5 pl-2 text-slate-500 text-xs align-top pt-3">tCO2e/kWh</td>
                                     <td></td>
                                 </tr>
                             </tbody>
@@ -137,25 +141,25 @@
                             <tbody>
                                 <tr>
                                     <td class="py-1.5 pr-3 text-slate-600 font-medium"></td>
-                                    <td class="py-1.5 w-32"><input name="factors[thermal_kwh]"
+                                    <td class="py-1.5 w-32"><input name="factors[thermal_kwh]" id="inp_thermal_kwh"
                                             class="w-full h-7 px-2 text-right border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77] text-sm"
-                                            type="number" step="any" value="0.000368068" /></td>
+                                            type="text" inputmode="decimal" value="{{ old('factors.thermal_kwh', str_replace('.', ',', rtrim(rtrim(number_format(\Illuminate\Support\Facades\Cache::get('factor_thermal_kwh', 0.000368068), 12, '.', ''), '0'), '.'))) }}" /></td>
                                     <td class="py-1.5 pl-2 text-slate-500 text-xs">tCO2e/kWh</td>
                                 </tr>
                                 <tr>
                                     <td class="py-1.5 pr-3 text-slate-600 font-medium"></td>
                                     <td class="py-1.5 w-32"><input name="factors[boiler]" id="inp_boiler_factor"
                                             class="w-full h-7 px-2 text-right border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77] text-sm"
-                                            type="number" step="any"
-                                            value="{{ number_format($boilerFactor * 1000, 2, '.', '') }}"
+                                            type="text" inputmode="decimal"
+                                            value="{{ old('factors.boiler', number_format($boilerFactor * 1000, 2, ',', '')) }}"
                                             oninput="calcDieselCo2()" /></td>
                                     <td class="py-1.5 pl-2 text-slate-500 text-xs">kgCO2e/liter</td>
                                 </tr>
                                 <tr>
                                     <td class="py-1.5 pr-3 text-slate-600 font-medium"></td>
-                                    <td class="py-1.5 w-32"><input name="factors[thermal_m3]"
+                                    <td class="py-1.5 w-32"><input name="factors[thermal_m3]" id="inp_thermal_m3"
                                             class="w-full h-7 px-2 text-right border-gray-300 rounded focus:border-[#009B77] focus:ring-[#009B77] text-sm"
-                                            type="number" step="any" value="3.17" /></td>
+                                            type="text" inputmode="decimal" value="{{ old('factors.thermal_m3', str_replace('.', ',', rtrim(rtrim(number_format(\Illuminate\Support\Facades\Cache::get('factor_thermal_m3', 3.17), 12, '.', ''), '0'), '.'))) }}" /></td>
                                     <td class="py-1.5 pl-2 text-slate-500 text-xs">tCO2e/m3</td>
                                 </tr>
                             </tbody>
@@ -543,6 +547,14 @@
                                 @endforeach
                                 <td class="px-4 py-2 text-right border border-gray-300 font-bold text-green-800"
                                     id="total_co2_coal">0.00</td>
+                            </tr>
+                            <tr class="bg-gray-50">
+                                <td colspan="{{ count($orderedBuildings) + 1 }}" class="px-4 py-2 border border-gray-300 text-right font-medium text-gray-900">
+                                    CO2 Emission 100% (Coal)
+                                </td>
+                                <td class="px-4 py-2 text-right border border-gray-300 font-bold text-gray-800" id="total_co2_100_coal">
+                                    0.00
+                                </td>
                             </tr>
                         </tbody>
                     </table>
@@ -1201,9 +1213,9 @@
                     formData.append('_token', '{{ csrf_token() }}');
                     formData.append('month', '{{ $selectedMonth }}');
                     formData.append('year', '{{ $selectedYear }}');
-                    formData.append('coal_factor', elCoal.value);
-                    formData.append('renewable_factor', elRen.value);
-                    formData.append('pv_factor', elPv.value);
+                    formData.append('coal_factor', elCoal.value.replace(/,/g, '.'));
+                    formData.append('renewable_factor', elRen.value.replace(/,/g, '.'));
+                    formData.append('pv_factor', elPv.value.replace(/,/g, '.'));
 
                     fetch('{{ route("data-entry.update-electricity-factors") }}', {
                         method: 'POST',
@@ -1217,12 +1229,12 @@
 
                         const elecMatrix = document.getElementById('electricity-matrix');
                         if (elecMatrix) {
-                            elecMatrix.dataset.coalFactor = elCoal.value;
+                            elecMatrix.dataset.coalFactor = elCoal.value.replace(/,/g, '.');
                             if (typeof calcElectricityMatrix === 'function') calcElectricityMatrix();
                         }
                         const solarMatrix = document.getElementById('solar-matrix');
                         if (solarMatrix) {
-                            solarMatrix.dataset.factor = elPv.value;
+                            solarMatrix.dataset.factor = elPv.value.replace(/,/g, '.');
                             if (typeof calcSolarMatrix === 'function') calcSolarMatrix();
                         }
                     });
@@ -1234,7 +1246,7 @@
 
                 if (elBoiler) {
                     elBoiler.addEventListener('change', function () {
-                        const val = parseFloat(elBoiler.value) || 0;
+                        const val = parseFloat(elBoiler.value.replace(/,/g, '.')) || 0;
                         const tco2ePerLiter = val / 1000;
 
                         const formData = new FormData();
@@ -1243,6 +1255,12 @@
                         formData.append('year', '{{ $selectedYear }}');
                         formData.append('boiler_factor', tco2ePerLiter);
 
+                        const elThermalKwh = document.getElementById('inp_thermal_kwh');
+                        if (elThermalKwh) formData.append('thermal_kwh', elThermalKwh.value);
+                        
+                        const elThermalM3 = document.getElementById('inp_thermal_m3');
+                        if (elThermalM3) formData.append('thermal_m3', elThermalM3.value);
+
                         fetch('{{ route("data-entry.update-diesel-factors") }}', {
                             method: 'POST',
                             body: formData,
@@ -1250,6 +1268,15 @@
                         }).then(() => {
                             elBoiler.style.backgroundColor = '#e6fffa';
                             setTimeout(() => elBoiler.style.backgroundColor = '', 1000);
+                            
+                            if (elThermalKwh) {
+                                elThermalKwh.style.backgroundColor = '#e6fffa';
+                                setTimeout(() => elThermalKwh.style.backgroundColor = '', 1000);
+                            }
+                            if (elThermalM3) {
+                                elThermalM3.style.backgroundColor = '#e6fffa';
+                                setTimeout(() => elThermalM3.style.backgroundColor = '', 1000);
+                            }
 
                             const dieselMatrix = document.getElementById('diesel-matrix');
                             if (dieselMatrix) {
@@ -1259,6 +1286,16 @@
                         });
                     });
                 }
+                
+                const elThermalKwh = document.getElementById('inp_thermal_kwh');
+                if (elThermalKwh) elThermalKwh.addEventListener('change', function() {
+                    if (elBoiler) { const ev = new Event('change'); elBoiler.dispatchEvent(ev); }
+                });
+                
+                const elThermalM3 = document.getElementById('inp_thermal_m3');
+                if (elThermalM3) elThermalM3.addEventListener('change', function() {
+                    if (elBoiler) { const ev = new Event('change'); elBoiler.dispatchEvent(ev); }
+                });
             }
             setupAjaxFactors();
 
@@ -1411,6 +1448,11 @@
                 if (topTotalCo2Elec) topTotalCo2Elec.textContent = totalCo2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
                 const topTotalValElec = document.getElementById(`total_val_{{ $elecSource->id ?? 0 }}`);
                 if (topTotalValElec) topTotalValElec.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 0, maximumFractionDigits: 2 });
+
+                // Calculate CO2 Emission 100% (Coal)
+                const total100Coal = (c1TotPurchased + c2TotPurchased) * coalFactor;
+                const elTotal100Coal = document.getElementById('total_co2_100_coal');
+                if (elTotal100Coal) elTotal100Coal.textContent = total100Coal.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
             }
 
             function calcSolarMatrix() {
@@ -1475,7 +1517,7 @@
             function calcDieselCo2() {
                 const factorInput = document.getElementById('inp_boiler_factor');
                 if (!factorInput) return;
-                const factor = parseFloat(factorInput.value) || 0;
+                const factor = parseFloat(factorInput.value.replace(/,/g, '.')) || 0;
 
                 // Wait for formatInputAndCalcRow to finish
                 setTimeout(() => {
