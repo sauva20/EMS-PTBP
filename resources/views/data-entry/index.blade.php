@@ -686,10 +686,10 @@
                                                     <td class="px-2 py-2 border-r border-gray-100 align-top">
                                                         <input type="text" inputmode="decimal"
                                                             name="emissions[{{ $building->id }}][{{ $dieselSource->id }}][{{ $cat->id }}]"
-                                                            class="matrix-input w-full px-2 py-1.5 text-right text-sm border-gray-200 focus:border-[#009B77] focus:ring-[#009B77] rounded shadow-sm bg-white row-calc-diesel-{{ $cat->id }}"
+                                                            class="matrix-input w-full px-2 py-1.5 text-right text-sm border-gray-200 focus:border-[#009B77] focus:ring-[#009B77] rounded shadow-sm bg-white row-calc-diesel-{{ $cat->id }} col-calc-diesel-{{ $building->id }}"
                                                             value="{{ isset($existingEmissions[$building->id][$dieselSource->id . '_' . $cat->id]) ? number_format($existingEmissions[$building->id][$dieselSource->id . '_' . $cat->id], 0, '.', ',') : '' }}"
                                                             placeholder="0"
-                                                            oninput="formatInputAndCalcRow(this, 'row-calc-diesel-{{ $cat->id }}', 'total-diesel-{{ $cat->id }}')">
+                                                            oninput="formatInputAndCalcRow(this, 'row-calc-diesel-{{ $cat->id }}', 'total-diesel-{{ $cat->id }}'); calcDieselMatrix();">
                                                     </td>
                                                 @endforeach
 
@@ -704,6 +704,25 @@
                                         @endif
                                     @endforeach
                                 </tbody>
+                                <tfoot class="bg-gray-50 border-t-2 border-gray-300 font-bold">
+                                    <tr class="bg-gray-100/80">
+                                        <td class="px-4 py-2.5 border-r border-gray-200 font-bold text-gray-900 text-xs uppercase">
+                                            Total Diesel (L)
+                                        </td>
+                                        @foreach($buildings as $building)
+                                            <td class="px-2 py-2 border-r border-gray-200 text-right font-bold text-gray-900"
+                                                id="total-diesel-building-{{ $building->id }}">
+                                                0
+                                            </td>
+                                        @endforeach
+                                        <td class="px-4 py-2 text-right border-r border-gray-200 bg-slate-200 font-bold text-gray-900"
+                                            id="total-diesel-grand">
+                                            0
+                                        </td>
+                                        <td class="px-4 py-2 text-right text-orange-600 font-bold">
+                                        </td>
+                                    </tr>
+                                </tfoot>
                             </table>
                         </div>
                     @endif
@@ -1508,11 +1527,51 @@
             setTimeout(() => {
                 calcElectricityMatrix();
                 calcSolarMatrix();
+                calcDieselMatrix();
                 calcDieselCo2();
                 if (typeof calcPetrolMatrix === 'function') calcPetrolMatrix();
                 if (typeof calcRefrigerantMatrix === 'function') calcRefrigerantMatrix();
                 window.updateTotals();
             }, 500);
+
+            function calcDieselMatrix() {
+                const buildingIds = @json($buildings->pluck('id'));
+                let grandTotal = 0;
+
+                buildingIds.forEach(bId => {
+                    const inputs = document.querySelectorAll('.col-calc-diesel-' + bId);
+                    let bSum = 0;
+                    inputs.forEach(inp => {
+                        const val = parseFloat(inp.value.replace(/,/g, '')) || 0;
+                        bSum += val;
+                    });
+
+                    const bTotalEl = document.getElementById('total-diesel-building-' + bId);
+                    if (bTotalEl) {
+                        bTotalEl.textContent = bSum > 0 ? bSum.toLocaleString('en-US') : '0';
+                    }
+
+                    grandTotal += bSum;
+
+                    // Sync to top matrix input for Stationary Energy (Diesel)
+                    const topInput = document.querySelector(`input[data-source="Stationary Energy (Diesel)"][data-building-id="${bId}"]`);
+                    if (topInput) {
+                        const currentTopVal = parseFloat(topInput.value.replace(/,/g, '')) || 0;
+                        if (currentTopVal !== bSum) {
+                            topInput.value = bSum > 0 ? bSum.toLocaleString('en-US') : '';
+                            const event = new Event('input', { bubbles: true });
+                            topInput.dispatchEvent(event);
+                        }
+                    }
+                });
+
+                const grandTotalEl = document.getElementById('total-diesel-grand');
+                if (grandTotalEl) {
+                    grandTotalEl.textContent = grandTotal > 0 ? grandTotal.toLocaleString('en-US') : '0';
+                }
+
+                calcDieselCo2();
+            }
 
             function calcDieselCo2() {
                 const factorInput = document.getElementById('inp_boiler_factor');
