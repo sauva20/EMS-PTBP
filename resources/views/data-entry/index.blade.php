@@ -244,12 +244,15 @@
                                                 data-factor="{{ $factors[$source->id] ?? 0 }}" data-source="{{ $source->name }}"
                                                 data-source-id="{{ $source->id }}" data-building-id="{{ $building->id }}"
                                                 data-building-name="{{ $building->name }}" placeholder="0.00"
-                                                oninput="let v = this.value.replace(/[^0-9.]/g, ''); let p = v.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); this.value = p.join('.'); if(typeof window.updateTotals === 'function') window.updateTotals();">
+                                                oninput="let v = this.value.replace(/[^0-9.]/g, ''); let p = v.split('.'); p[0] = p[0].replace(/\B(?=(\d{3})+(?!\d))/g, ','); this.value = p.join('.'); if(typeof handleTopInputSync === 'function') handleTopInputSync(this); if(typeof window.updateTotals === 'function') window.updateTotals();">
                                         </td>
                                     @endforeach
                                     <td
-                                        class="px-3 py-1.5 border-l border-gray-200 bg-[#009B77]/5 align-middle group-hover:bg-[#009B77]/10 transition-colors">
-                                        <!-- Source Total placeholder if needed -->
+                                        class="px-3 py-1.5 border-l border-gray-200 bg-[#009B77]/5 align-middle group-hover:bg-[#009B77]/10 transition-colors text-right">
+                                        <div class="flex items-center justify-end pr-2">
+                                            <span id="total_val_{{ $source->id }}"
+                                                class="font-bold text-gray-800 text-sm">0.00</span>
+                                        </div>
                                     </td>
                                 </tr>
                                 <!-- CO2 Emission Row -->
@@ -263,22 +266,17 @@
                                             class="px-2 py-1.5 border-r border-gray-100 align-middle text-right text-xs font-semibold text-[#009B77]">
                                             @if($source->name === 'Purchased Electricity')
                                                 <span class="co2-preview"
-                                                    id="co2-preview-{{ $building->id }}-{{ $source->id }}">{{ isset($existingCo2[$building->id][$source->id . '_0']) ? number_format($existingCo2[$building->id][$source->id . '_0'], 2) : 'Auto' }}</span>
+                                                    id="co2-preview-{{ $building->id }}-{{ $source->id }}">{{ isset($existingCo2[$building->id][$source->id . '_0']) ? number_format($existingCo2[$building->id][$source->id . '_0'], 2) : '0.00' }}</span>
                                             @else
                                                 <span class="co2-preview"
                                                     id="co2-preview-{{ $building->id }}-{{ $source->id }}">{{ isset($existingCo2[$building->id][$source->id . '_0']) ? number_format($existingCo2[$building->id][$source->id . '_0'], 2) : '' }}</span>
                                             @endif
                                         </td>
                                     @endforeach
-                                    <td class="px-3 py-1.5 border-l border-gray-200 align-middle bg-[#009B77]/10">
+                                    <td class="px-3 py-1.5 border-l border-gray-200 align-middle bg-[#009B77]/10 text-right">
                                         <div class="flex items-center justify-end pr-2">
-                                            @if($source->name === 'Purchased Electricity')
-                                                <span id="total_co2_{{ $source->id }}"
-                                                    class="font-bold text-[#009B77] text-sm">Auto</span>
-                                            @else
-                                                <span id="total_co2_{{ $source->id }}"
-                                                    class="font-bold text-[#009B77] text-sm">0.00</span>
-                                            @endif
+                                            <span id="total_co2_{{ $source->id }}"
+                                                class="font-bold text-[#009B77] text-sm">0.00</span>
                                         </div>
                                     </td>
                                 </tr>
@@ -956,9 +954,12 @@
                             const totalCo2El = document.getElementById(`total_co2_${sourceId}`);
                             if (totalCo2El) {
                                 if (!isElec) {
-                                    totalCo2El.textContent = totalCo2 > 0 ? totalCo2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0';
+                                    totalCo2El.textContent = totalCo2 > 0 ? totalCo2.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 }) : '0.00';
                                 } else {
-                                    totalCo2El.textContent = 'Auto';
+                                    const coalCo2El = document.getElementById('total_co2_coal');
+                                    if (coalCo2El) {
+                                        totalCo2El.textContent = coalCo2El.textContent;
+                                    }
                                 }
                             }
                         });
@@ -1396,7 +1397,11 @@
                 if (elTotal) elTotal.textContent = total.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 
                 const elGrandTotal = document.getElementById('grand_total_purchased_elec');
-                if (elGrandTotal) elGrandTotal.textContent = (c1TotPurchased + c2TotPurchased).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                if (elGrandTotal) {
+                    const effectiveC1 = c1TotPurchased > 0 ? c1TotPurchased : campusSubmeterTotal['c1'];
+                    const effectiveC2 = c2TotPurchased > 0 ? c2TotPurchased : campusSubmeterTotal['c2'];
+                    elGrandTotal.textContent = (effectiveC1 + effectiveC2).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+                }
 
                 let totalCoal = 0;
                 let totalCo2 = 0;
@@ -1533,6 +1538,26 @@
                 if (typeof calcRefrigerantMatrix === 'function') calcRefrigerantMatrix();
                 window.updateTotals();
             }, 500);
+
+            function handleTopInputSync(input) {
+                const source = input.dataset.source;
+                const buildingId = input.dataset.buildingId;
+                const val = input.value;
+
+                if (source === 'Purchased Electricity') {
+                    const bottomInput = document.querySelector(`.input-purchased-elec[data-building-id="${buildingId}"]`);
+                    if (bottomInput && bottomInput.value.replace(/,/g, '') !== val.replace(/,/g, '')) {
+                        bottomInput.value = val;
+                        calcElectricityMatrix();
+                    }
+                } else if (source === 'Self-generated PV Electricity') {
+                    const bottomInput = document.querySelector(`.input-solar[data-building-id="${buildingId}"]`);
+                    if (bottomInput && bottomInput.value.replace(/,/g, '') !== val.replace(/,/g, '')) {
+                        bottomInput.value = val;
+                        calcSolarMatrix();
+                    }
+                }
+            }
 
             function calcDieselMatrix() {
                 const buildingIds = @json($buildings->pluck('id'));
